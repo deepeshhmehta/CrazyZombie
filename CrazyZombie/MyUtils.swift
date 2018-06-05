@@ -80,3 +80,14 @@ func shortestAngleBetween(angle1: CGFloat,
     }
     return angle
 }
+
+extension CGFloat{
+    static func random() -> CGFloat{
+        return CGFloat(Float(arc4random()) / Float(UInt32.max))
+    }
+    
+    static func random(min:CGFloat, max:CGFloat) -> CGFloat{
+        assert(min < max)
+        return min + CGFloat.random() * (max-min)
+    }
+}
