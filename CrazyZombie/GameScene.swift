@@ -23,6 +23,9 @@ class GameScene: SKScene {
     let zombieRotateRadiansPerSec: CGFloat = 4.0 * π
     let zombieAnimation : SKAction
     var zombieIsBlinking = false;
+    var lives = 5
+    var catsInTrain = 0
+    var gameOver = false
     
     override init(size: CGSize) {
         let maxAspectRatio : CGFloat = 16.0/9.0
@@ -87,6 +90,16 @@ class GameScene: SKScene {
         
         boundsCheckZombie()
         moveTrain()
+
+        if lives < 0 && gameOver == false{
+            gameOver = true
+            print("Lost")
+        }
+        
+        if catsInTrain >= 15 && gameOver == false{
+            gameOver = true
+            print("Won")
+        }
     }
     
     override func didEvaluateActions() {
@@ -224,6 +237,7 @@ class GameScene: SKScene {
             object.name = "train"
             let greenAction = SKAction.colorize(with: UIColor.green, colorBlendFactor: 0.8, duration: TimeInterval(1.0))
             object.run(greenAction)
+            self.catsInTrain += 1
             run(SKAction.playSoundFileNamed("hitCat.wav", waitForCompletion: false))
             }
         case "enemy":do {
@@ -252,6 +266,9 @@ class GameScene: SKScene {
                     
                     let changeEnemyColour = SKAction.colorize(with: UIColor.red, colorBlendFactor:0.2, duration: 0.5)
                     object.run(changeEnemyColour)
+                    
+                    looseCats()
+                    self.lives -= 1
                 }
             }
         default:
@@ -297,6 +314,30 @@ class GameScene: SKScene {
                 node.run(moveAction)
             }
             targetPosition = node.position
+        }
+    }
+    
+    func looseCats(){
+        var looseCount = 0
+        enumerateChildNodes(withName: "train"){ node, stop in
+            let randomX = CGFloat.random(min: 0, max: self.size.width)
+            let randomY = CGFloat.random(min: self.playableRect.minY, max: self.playableRect.maxY)
+            node.removeAllActions()
+            node.run(SKAction.sequence([
+                SKAction.group([
+                    SKAction.move(to: CGPoint(x:randomX, y:randomY), duration: 1.0),
+                    SKAction.rotate(byAngle: 3.14 * 4, duration: 1.0),
+                    SKAction.colorize(with: UIColor.black, colorBlendFactor: 1.0, duration: 1.0)
+                    ]),
+                SKAction.removeFromParent()
+                ]))
+            looseCount += 1
+            self.catsInTrain -= 1
+
+            if looseCount >= 2{
+                stop[0] = true
+            }
+            
         }
     }
 }
