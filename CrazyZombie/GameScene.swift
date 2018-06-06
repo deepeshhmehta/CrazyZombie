@@ -22,6 +22,7 @@ class GameScene: SKScene {
     var destination : CGPoint = CGPoint(x:0,y:0)
     let zombieRotateRadiansPerSec: CGFloat = 4.0 * π
     let zombieAnimation : SKAction
+    var zombieIsBlinking = false;
     
     override init(size: CGSize) {
         let maxAspectRatio : CGFloat = 16.0/9.0
@@ -77,14 +78,15 @@ class GameScene: SKScene {
         }
         lastUpdateTime = currentTime
         
-        if(destination - zombie.position).length() > (CGFloat(dt) * zombieMovePointsPerSec){
+//        if(destination - zombie.position).length() > (CGFloat(dt) * zombieMovePointsPerSec){
             move(sprite: zombie,velocity: velocity)
             rotate(sprite: zombie, direction: velocity, rotateRadiansPerSecond: 3)
-        }else{
-            zombie.removeAction(forKey: "ZombieWalk")
-        }
+//        }else{
+//            zombie.removeAction(forKey: "ZombieWalk")
+//        }
         
         boundsCheckZombie()
+        moveTrain()
     }
     
     override func didEvaluateActions() {
@@ -112,16 +114,28 @@ class GameScene: SKScene {
         let touchLocation = touch.location(in: self)
         destination = touchLocation
         moveZombieToward(location: touchLocation)
+        let touchPointer = SKSpriteNode.init(imageNamed: "touchMarker")
+        touchPointer.zPosition = 5.0
+        touchPointer.position = touchLocation
+        addChild(touchPointer)
+        touchPointer.setScale(1.0)
+        let touchDisappear = SKAction.scale(to: 0.0, duration: 0.5)
+        let touchRemove = SKAction.run {
+            touchPointer.removeFromParent()
+        }
+        let touchActions = SKAction.sequence([touchDisappear,touchRemove])
+        touchPointer.run(touchActions)
+        
     }
     
-    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard let touch = touches.first else {
-            return
-        }
-        let touchLocation = touch.location(in: self)
-        destination = touchLocation
-        moveZombieToward(location: touchLocation)
-    }
+//    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+//        guard let touch = touches.first else {
+//            return
+//        }
+//        let touchLocation = touch.location(in: self)
+//        destination = touchLocation
+//        moveZombieToward(location: touchLocation)
+//    }
     
     func boundsCheckZombie() {
         let bottomLeft = CGPoint(x: 0 + zombie.size.width / 2, y: playableRect.minY + zombie.size.height / 2)
@@ -155,6 +169,7 @@ class GameScene: SKScene {
         let enemy = SKSpriteNode(imageNamed: "enemy")
         enemy.position = CGPoint(x: size.width + enemy.size.width/2, y: CGFloat.random(min: playableRect.minY + enemy.size.height/2, max: playableRect.maxY - enemy.size.height/2) )
         enemy.name = "enemy"
+        enemy.setScale(0.8)
         addChild(enemy)
         let action = SKAction.moveTo(x: -enemy.size.width/2, duration: 3.0)
         let actionRemove = SKAction.removeFromParent()
@@ -201,14 +216,43 @@ class GameScene: SKScene {
     func zombieHit(object: SKSpriteNode){
         switch object.name {
         case "cat":do {
-            print("cat removed")
-            object.removeFromParent()
+//            print("cat removed")
+//            object.removeFromParent()
+            object.removeAllActions()
+            object.setScale(1.0)
+            object.zRotation = 0
+            object.name = "train"
+            let greenAction = SKAction.colorize(with: UIColor.green, colorBlendFactor: 0.8, duration: TimeInterval(1.0))
+            object.run(greenAction)
             run(SKAction.playSoundFileNamed("hitCat.wav", waitForCompletion: false))
             }
         case "enemy":do {
-            print("enemy removed")
-            object.removeFromParent()
-            run(SKAction.playSoundFileNamed("hitCatLady.wav", waitForCompletion: false))
+                if zombieIsBlinking == false{
+//                    print("enemy removed")
+//                    object.removeFromParent()
+                    let blinkTimes = 10.0
+                    let duration = 3.0
+                    let blinkAction = SKAction.customAction(
+                    withDuration: duration) { node, elapsedTime in
+                        let slice = duration / blinkTimes
+                        let remainder = Double(elapsedTime).truncatingRemainder(
+                            dividingBy: slice)
+                        node.isHidden = remainder > slice / 2
+                        self.zombieIsBlinking = true
+                        
+                    }
+                    let isNoLongerBlinkingAction = SKAction.run {
+                        self.zombieIsBlinking = false;
+                        self.zombie.isHidden = false;
+                    }
+                    
+                    let zombieBlinkCodeGroup = SKAction.sequence([blinkAction,isNoLongerBlinkingAction])
+                    zombie.run(zombieBlinkCodeGroup)
+                    run(SKAction.playSoundFileNamed("hitCatLady.wav", waitForCompletion: false))
+                    
+                    let changeEnemyColour = SKAction.colorize(with: UIColor.red, colorBlendFactor:0.2, duration: 0.5)
+                    object.run(changeEnemyColour)
+                }
             }
         default:
             object.removeFromParent()
@@ -237,6 +281,22 @@ class GameScene: SKScene {
         
         for enemy in hitEnemies{
             zombieHit(object: enemy)
+        }
+    }
+    
+    func moveTrain() {
+        var targetPosition = zombie.position
+        enumerateChildNodes(withName: "train") { node, stop in
+            if !node.hasActions() {
+                let actionDuration = 0.3
+                let offset = targetPosition - node.position
+                let direction = offset.normalized()
+                let amountToMovePerSec = direction * self.zombieMovePointsPerSec
+                let amountToMove = amountToMovePerSec * CGFloat(actionDuration)
+                let moveAction = SKAction.moveBy(x: amountToMove.x, y: amountToMove.y, duration: actionDuration)
+                node.run(moveAction)
+            }
+            targetPosition = node.position
         }
     }
 }
