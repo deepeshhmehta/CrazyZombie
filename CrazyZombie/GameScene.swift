@@ -71,6 +71,8 @@ class GameScene: SKScene {
             SKAction.sequence([SKAction.run() { [weak self] in
                 self?.spawnCat()
                 },SKAction.wait(forDuration: TimeInterval(CGFloat.random(min: 1.0, max: 5.0)))])))
+        
+        playBackgroundMusic(filename: "backgroundMusic.mp3")
     }
     
     override func update(_ currentTime: TimeInterval) {
@@ -81,12 +83,12 @@ class GameScene: SKScene {
         }
         lastUpdateTime = currentTime
         
-//        if(destination - zombie.position).length() > (CGFloat(dt) * zombieMovePointsPerSec){
+        if(destination - zombie.position).length() > (CGFloat(dt) * zombieMovePointsPerSec){
             move(sprite: zombie,velocity: velocity)
             rotate(sprite: zombie, direction: velocity, rotateRadiansPerSecond: 3)
-//        }else{
-//            zombie.removeAction(forKey: "ZombieWalk")
-//        }
+        }else{
+            zombie.removeAction(forKey: "ZombieWalk")
+        }
         
         boundsCheckZombie()
         moveTrain()
@@ -94,11 +96,21 @@ class GameScene: SKScene {
         if lives < 0 && gameOver == false{
             gameOver = true
             print("Lost")
+            let gameOverScene = GameOverScene(size: size, won: false)
+            gameOverScene.scaleMode = scaleMode
+            let reveal = SKTransition.doorsOpenHorizontal(withDuration: 1.0)
+            backgroundMusicPlayer.stop()
+            view?.presentScene(gameOverScene, transition: reveal)
         }
         
         if catsInTrain >= 15 && gameOver == false{
             gameOver = true
             print("Won")
+            let gameWonScene = GameOverScene(size: size, won: true)
+            gameWonScene.scaleMode = scaleMode
+            let reveal = SKTransition.doorsOpenHorizontal(withDuration: 1.0)
+            backgroundMusicPlayer.stop()
+            view?.presentScene(gameWonScene, transition: reveal)
         }
     }
     
