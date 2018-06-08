@@ -11,51 +11,27 @@ import GameplayKit
 
 class GameScene: SKScene {
     
-    private var zombie :SKSpriteNode = SKSpriteNode(imageNamed: "zombie1")
-    let zombieAnimation : SKAction
-    let cameraNode : SKCameraNode = SKCameraNode()
-    
-    var lastUpdateTime: TimeInterval = 0
-    var dt: TimeInterval = 0
-    var zombieMovePointsPerSec: CGFloat = 480.0
-    let cameraMovePointsPerSec: CGFloat = 200.0
-    
-    var velocity = CGPoint(x:0, y: 0)
-    var playableRect : CGRect
-    var destination : CGPoint = CGPoint(x:0,y:0)
-
-    let zombieRotateRadiansPerSec: CGFloat = 4.0 * π
-    var lives = 5
-    var catsInTrain = 0
-    var zombieIsBlinking = false
-    var gameOver = false
-    var moveRight = true
-    
-    override init(size: CGSize) {
+    override func didMove(to view: SKView) {
+        DataStore.lives = 5
+        DataStore.catsInTrain = 0
+        DataStore.gameOver = false
+        DataStore.zombieIsBlinking = false
+        DataStore.lastUpdateTime = 0
+        DataStore.dt = 0
+        
+//        print("GameStats")
+//        print("------")
+//        print("lives: \(Values.lives)")
+//        print("catsInTrain: \(Values.catsInTrain)")
+//        print("gameOver: \(Values.gameOver)")
+//        print("zombieIsBlinking: \(Values.zombieIsBlinking)")
+//        print("lastUpdateTime: \(Values.lastUpdateTime)")
+//        print("dt: \(Values.dt)")
+        
         let maxAspectRatio : CGFloat = 16.0/9.0
         let playableHeight = size.width / maxAspectRatio
         let playableMargin = ( size.height - playableHeight )/2.0
-        playableRect = CGRect(x: 0, y: playableMargin, width: size.width, height: playableHeight)
-    
-        
-        var textures : [SKTexture] = []
-        for i in 1...4{
-            textures.append(SKTexture(imageNamed: "zombie\(i)"))
-        }
-        
-        textures.append(textures[2])
-        textures.append(textures[1])
-        zombieAnimation = SKAction.animate(with: textures,
-                                           timePerFrame: 0.1)
-        super.init(size: size)
-    }
-    
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    override func didMove(to view: SKView) {
-        
-        backgroundColor = SKColor.black
+        DataStore.playableRect = CGRect(x: 0, y: playableMargin, width: size.width, height: playableHeight)
         
         for i in 0...1 {
             let background = backgroundNode()
@@ -67,14 +43,14 @@ class GameScene: SKScene {
             addChild(background)
         }
         
-        cameraNode.position = CGPoint(x: size.width/2, y: size.height/2)
+        DataStore.cameraNode.position = CGPoint(x: size.width/2, y: size.height/2)
         
-        camera = cameraNode
-        addChild(cameraNode)
+        camera = DataStore.cameraNode
+        addChild(DataStore.cameraNode)
         
-        zombie.position = CGPoint.init(x: size.width/4, y: 400)
-        zombie.zPosition = 1
-        addChild(zombie)
+        DataStore.zombie.position = CGPoint.init(x: size.width/4, y: 400)
+        DataStore.zombie.zPosition = 1
+        addChild(DataStore.zombie)
 
         run(SKAction.repeatForever(
             SKAction.sequence([SKAction.run() { [weak self] in
@@ -89,26 +65,19 @@ class GameScene: SKScene {
     }
     
     override func update(_ currentTime: TimeInterval) {
-        if lastUpdateTime > 0 {
-            dt = currentTime - lastUpdateTime
+        if DataStore.lastUpdateTime > 0 {
+            DataStore.dt = currentTime - DataStore.lastUpdateTime
         } else {
-            dt = 0
+            DataStore.dt = 0
         }
-        lastUpdateTime = currentTime
+        DataStore.lastUpdateTime = currentTime
         
-//        if zombie.position.x >= size.width/3 {
-//            cameraNode.position.x = zombie.position.x + size.width/3
-//        }
-        
-        if destination.x > zombie.position.x{
-            print("A")
-            print("destination: \(destination.x)")
-            print("zombie: \(zombie.position.x)")
-            self.moveRight = true
-            var pos: CGFloat = zombie.position.x + size.width/4
+        if DataStore.destination.x > DataStore.zombie.position.x{
+            DataStore.moveRight = true
+            var pos: CGFloat = DataStore.zombie.position.x + size.width/4
 //            pos = pos > size.width/2 ? pos : size.width/2
             let transitionAnimate = SKAction.moveTo(x: pos, duration: 0.5)
-            cameraNode.run(transitionAnimate)
+            DataStore.cameraNode.run(transitionAnimate)
             
             enumerateChildNodes(withName: "background") { node, _ in
                 let background = node as! SKSpriteNode
@@ -119,15 +88,12 @@ class GameScene: SKScene {
                 }
             }
         }
-        if destination.x < zombie.position.x {
-            print("B")
-            print("destination: \(destination.x)")
-            print("zombie: \(zombie.position.x)")
-            self.moveRight = false
-            var pos: CGFloat = zombie.position.x - size.width/4
+        if DataStore.destination.x < DataStore.zombie.position.x {
+            DataStore.moveRight = false
+            var pos: CGFloat = DataStore.zombie.position.x - size.width/4
 //            pos = pos > size.width/2 ? pos : size.width/2
             let transitionAnimate = SKAction.moveTo(x: pos, duration: 0.5)
-            cameraNode.run(transitionAnimate)
+            DataStore.cameraNode.run(transitionAnimate)
             
             enumerateChildNodes(withName: "background") { node, _ in
                 let background = node as! SKSpriteNode
@@ -139,18 +105,18 @@ class GameScene: SKScene {
             }
         }
         
-        if(destination - zombie.position).length() > (CGFloat(dt) * zombieMovePointsPerSec){
-            move(sprite: zombie,velocity: velocity)
-            rotate(sprite: zombie, direction: velocity, rotateRadiansPerSecond: 3)
+        if(DataStore.destination - DataStore.zombie.position).length() > (CGFloat(DataStore.dt) * DataStore.zombieMovePointsPerSec){
+            move(sprite: DataStore.zombie,velocity: DataStore.velocity)
+            rotate(sprite: DataStore.zombie, direction: DataStore.velocity, rotateRadiansPerSecond: 3)
         }else{
-            zombie.removeAction(forKey: "ZombieWalk")
+            DataStore.zombie.removeAction(forKey: "ZombieWalk")
         }
         
         boundsCheckZombie()
         moveTrain()
 
-        if lives < 0 && gameOver == false{
-            gameOver = true
+        if DataStore.lives < 0 && DataStore.gameOver == false{
+            DataStore.gameOver = true
             print("Lost")
             let gameOverScene = GameOverScene(size: size, won: false)
             gameOverScene.scaleMode = scaleMode
@@ -159,8 +125,8 @@ class GameScene: SKScene {
             view?.presentScene(gameOverScene, transition: reveal)
         }
         
-        if catsInTrain >= 15 && gameOver == false{
-            gameOver = true
+        if DataStore.catsInTrain >= 15 && DataStore.gameOver == false{
+            DataStore.gameOver = true
             print("Won")
             let gameWonScene = GameOverScene(size: size, won: true)
             gameWonScene.scaleMode = scaleMode
@@ -186,16 +152,16 @@ class GameScene: SKScene {
     
     func move(sprite: SKSpriteNode, velocity: CGPoint) {
         // 1
-        let amountToMove = velocity * CGFloat(dt)
+        let amountToMove = velocity * CGFloat(DataStore.dt)
         // 2
         sprite.position += amountToMove
     }
     
     func moveZombieToward(location: CGPoint) {
-        zombie.run(SKAction.repeatForever(zombieAnimation), withKey: "ZombieWalk")
-        let offset = location - zombie.position
+        DataStore.zombie.run(SKAction.repeatForever(DataStore.zombieAnimation), withKey: "ZombieWalk")
+        let offset = location - DataStore.zombie.position
         let direction = offset.normalized()
-        velocity = direction * zombieMovePointsPerSec
+        DataStore.velocity = direction * DataStore.zombieMovePointsPerSec
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -203,7 +169,7 @@ class GameScene: SKScene {
             return
         }
             let touchLocation = touch.location(in: self)
-            destination = touchLocation
+            DataStore.destination = touchLocation
             moveZombieToward(location: touchLocation)
             let touchPointer = SKSpriteNode.init(imageNamed: "touchMarker")
             touchPointer.zPosition = 5.0
@@ -222,45 +188,36 @@ class GameScene: SKScene {
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches{
             let touchLocation = touch.location(in: self)
-            destination = touchLocation
+            DataStore.destination = touchLocation
             moveZombieToward(location: touchLocation)
         }
     }
     
-//    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-//        guard let touch = touches.first else {
-//            return
-//        }
-//        let touchLocation = touch.location(in: self)
-//        destination = touchLocation
-//        moveZombieToward(location: touchLocation)
-//    }
-    
     func boundsCheckZombie() {
-        let bottomLeft = CGPoint(x: zombie.size.width/2 + cameraRect.minX, y: cameraRect.minY + zombie.size.height / 2)
-        let topRight = CGPoint(x: cameraRect.maxX - zombie.size.width / 2, y: cameraRect.maxY - zombie.size.height / 2)
+        let bottomLeft = CGPoint(x: DataStore.zombie.size.width/2 + cameraRect.minX, y: cameraRect.minY + DataStore.zombie.size.height / 2)
+        let topRight = CGPoint(x: cameraRect.maxX - DataStore.zombie.size.width / 2, y: cameraRect.maxY - DataStore.zombie.size.height / 2)
         
-        if zombie.position.x <= bottomLeft.x {
-            zombie.position.x = bottomLeft.x
-            velocity.x = -velocity.x
+        if DataStore.zombie.position.x <= bottomLeft.x {
+            DataStore.zombie.position.x = bottomLeft.x
+            DataStore.velocity.x = -DataStore.velocity.x
         }
-        if zombie.position.x >= topRight.x {
-            zombie.position.x = topRight.x
-            velocity.x = -velocity.x
+        if DataStore.zombie.position.x >= topRight.x {
+            DataStore.zombie.position.x = topRight.x
+            DataStore.velocity.x = -DataStore.velocity.x
         }
-        if zombie.position.y <= bottomLeft.y {
-            zombie.position.y = bottomLeft.y
-            velocity.y = -velocity.y
+        if DataStore.zombie.position.y <= bottomLeft.y {
+            DataStore.zombie.position.y = bottomLeft.y
+            DataStore.velocity.y = -DataStore.velocity.y
         }
-        if zombie.position.y >= topRight.y {
-            zombie.position.y = topRight.y
-            velocity.y = -velocity.y
+        if DataStore.zombie.position.y >= topRight.y {
+            DataStore.zombie.position.y = topRight.y
+            DataStore.velocity.y = -DataStore.velocity.y
         }
     }
     
     func rotate(sprite: SKSpriteNode, direction: CGPoint, rotateRadiansPerSecond : CGFloat) {
-        let shortest = shortestAngleBetween(angle1: sprite.zRotation, angle2: velocity.angle)
-        let amountToRotate = min(rotateRadiansPerSecond * CGFloat(dt), abs(shortest))
+        let shortest = shortestAngleBetween(angle1: sprite.zRotation, angle2: DataStore.velocity.angle)
+        let amountToRotate = min(rotateRadiansPerSecond * CGFloat(DataStore.dt), abs(shortest))
         sprite.zRotation += shortest.sign() * amountToRotate
     }
     
@@ -272,17 +229,11 @@ class GameScene: SKScene {
         var action = SKAction.moveTo(x: cameraRect.minX - enemy.size.width/2, duration: 4.0)
         let actionRemove = SKAction.removeFromParent()
         
-        if !self.moveRight{
+        if !DataStore.moveRight{
             enemy.xScale = -0.8
             enemy.position.x = cameraRect.minX - enemy.size.width
             action = SKAction.moveTo(x: cameraRect.maxX + enemy.size.width/2, duration: 4.0)
         }
-//        let actionMid = SKAction.moveBy(x: -size.width/2 , y: -playableRect.maxY/2 + enemy.size.height/2, duration: 1.0)
-//        let actionWait = SKAction.wait(forDuration: 2.0)
-//        let actionMove = SKAction.moveBy(x: -size.width/2 , y: playableRect.maxY/2 - enemy.size.height/2, duration: 1.0)
-//        let sequence = SKAction.sequence([actionMid, actionWait, actionMove,actionMid.reversed(),actionMove.reversed()])
-//        let repeated = SKAction.repeatForever(sequence)
-//        enemy.run(repeated)
         
         addChild(enemy)
         enemy.run(SKAction.sequence([action,actionRemove]))
@@ -329,11 +280,11 @@ class GameScene: SKScene {
             object.name = "train"
             let greenAction = SKAction.colorize(with: UIColor.green, colorBlendFactor: 0.8, duration: TimeInterval(1.0))
             object.run(greenAction)
-            self.catsInTrain += 1
+            DataStore.catsInTrain += 1
             run(SKAction.playSoundFileNamed("hitCat.wav", waitForCompletion: false))
             }
         case "enemy":do {
-                if zombieIsBlinking == false{
+                if DataStore.zombieIsBlinking == false{
 //                    print("enemy removed")
 //                    object.removeFromParent()
                     let blinkTimes = 10.0
@@ -344,23 +295,23 @@ class GameScene: SKScene {
                         let remainder = Double(elapsedTime).truncatingRemainder(
                             dividingBy: slice)
                         node.isHidden = remainder > slice / 2
-                        self.zombieIsBlinking = true
+                        DataStore.zombieIsBlinking = true
                         
                     }
                     let isNoLongerBlinkingAction = SKAction.run {
-                        self.zombieIsBlinking = false;
-                        self.zombie.isHidden = false;
+                        DataStore.zombieIsBlinking = false;
+                        DataStore.zombie.isHidden = false;
                     }
                     
                     let zombieBlinkCodeGroup = SKAction.sequence([blinkAction,isNoLongerBlinkingAction])
-                    zombie.run(zombieBlinkCodeGroup)
+                    DataStore.zombie.run(zombieBlinkCodeGroup)
                     run(SKAction.playSoundFileNamed("hitCatLady.wav", waitForCompletion: false))
                     
                     let changeEnemyColour = SKAction.colorize(with: UIColor.red, colorBlendFactor:0.2, duration: 0.5)
                     object.run(changeEnemyColour)
                     
                     looseCats()
-                    self.lives -= 1
+                    DataStore.lives -= 1
                 }
             }
         default:
@@ -372,7 +323,7 @@ class GameScene: SKScene {
         var hitCats: [SKSpriteNode] = []
         enumerateChildNodes(withName: "cat") { node, _ in
             let cat = node as! SKSpriteNode
-            if cat.frame.intersects(self.zombie.frame) {
+            if cat.frame.intersects(DataStore.zombie.frame) {
                 hitCats.append(cat)
             }
         }
@@ -383,7 +334,7 @@ class GameScene: SKScene {
         var hitEnemies : [SKSpriteNode] = []
         enumerateChildNodes(withName: "enemy") {node, _ in
             let enemy = node as! SKSpriteNode
-            if enemy.frame.intersects(self.zombie.frame){
+            if enemy.frame.intersects(DataStore.zombie.frame){
                 hitEnemies.append(enemy)
             }
         }
@@ -394,14 +345,14 @@ class GameScene: SKScene {
     }
     
     func moveTrain() {
-        var targetPosition = zombie.position
+        var targetPosition = DataStore.zombie.position
         enumerateChildNodes(withName: "train") { node, stop in
             if !node.hasActions() {
-                node.xScale = self.moveRight ? 1.0 : -1.0
+                node.xScale = DataStore.moveRight ? 1.0 : -1.0
                 let actionDuration = 0.3
                 let offset = targetPosition - node.position
                 let direction = offset.normalized()
-                let amountToMovePerSec = direction * self.zombieMovePointsPerSec
+                let amountToMovePerSec = direction * DataStore.zombieMovePointsPerSec
                 let amountToMove = amountToMovePerSec * CGFloat(actionDuration)
                 let moveAction = SKAction.moveBy(x: amountToMove.x, y: amountToMove.y, duration: actionDuration)
                 node.run(moveAction)
@@ -414,7 +365,7 @@ class GameScene: SKScene {
         var looseCount = 0
         enumerateChildNodes(withName: "train"){ node, stop in
             let randomX = CGFloat.random(min: 0, max: self.size.width)
-            let randomY = CGFloat.random(min: self.playableRect.minY, max: self.playableRect.maxY)
+            let randomY = CGFloat.random(min: self.cameraRect.minY, max: self.cameraRect.maxY)
             node.removeAllActions()
             node.run(SKAction.sequence([
                 SKAction.group([
@@ -425,7 +376,7 @@ class GameScene: SKScene {
                 SKAction.removeFromParent()
                 ]))
             looseCount += 1
-            self.catsInTrain -= 1
+            DataStore.catsInTrain -= 1
 
             if looseCount >= 2{
                 stop[0] = true
@@ -462,20 +413,20 @@ class GameScene: SKScene {
     
     func moveCamera() {
         let backgroundVelocity =
-            CGPoint(x: cameraMovePointsPerSec, y: 0)
-        let amountToMove = backgroundVelocity * CGFloat(dt)
-        cameraNode.position += amountToMove
+            CGPoint(x: DataStore.cameraMovePointsPerSec, y: 0)
+        let amountToMove = backgroundVelocity * CGFloat(DataStore.dt)
+        DataStore.cameraNode.position += amountToMove
     }
     
     var cameraRect : CGRect {
-        let x = cameraNode.position.x - size.width/2
-            + (size.width - playableRect.width)/2
-        let y = cameraNode.position.y - size.height/2
-            + (size.height - playableRect.height)/2
+        let x = DataStore.cameraNode.position.x - size.width/2
+            + (size.width - DataStore.playableRect.width)/2
+        let y = DataStore.cameraNode.position.y - size.height/2
+            + (size.height - DataStore.playableRect.height)/2
         return CGRect(
             x: x,
             y: y,
-            width: playableRect.width,
-            height: playableRect.height)
+            width: DataStore.playableRect.width,
+            height: DataStore.playableRect.height)
     }
 }
