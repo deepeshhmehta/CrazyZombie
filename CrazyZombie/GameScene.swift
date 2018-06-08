@@ -11,6 +11,18 @@ import GameplayKit
 
 class GameScene: SKScene {
     
+    var cameraRect : CGRect {
+        let x = DataStore.cameraNode.position.x - size.width/2
+            + (size.width - DataStore.playableRect.width)/2
+        let y = DataStore.cameraNode.position.y - size.height/2
+            + (size.height - DataStore.playableRect.height)/2
+        return CGRect(
+            x: x,
+            y: y,
+            width: DataStore.playableRect.width,
+            height: DataStore.playableRect.height)
+    }
+    
     override func didMove(to view: SKView) {
         DataStore.lives = 5
         DataStore.catsInTrain = 0
@@ -44,18 +56,16 @@ class GameScene: SKScene {
         }
         
         DataStore.cameraNode.position = CGPoint(x: size.width/2, y: size.height/2)
-        
         camera = DataStore.cameraNode
         addChild(DataStore.cameraNode)
         
-        DataStore.zombie.position = CGPoint.init(x: size.width/4, y: 400)
-        DataStore.zombie.zPosition = 1
-        addChild(DataStore.zombie)
+        addChild(SpawnAndAnimations.spawnZombie(x: size.width/4, y: 400))
 
         run(SKAction.repeatForever(
             SKAction.sequence([SKAction.run() { [weak self] in
                 self?.spawnEnemyPrimary()
                 },SKAction.wait(forDuration: TimeInterval(CGFloat.random(min: 2.0, max: 5.0)))])))
+        
         run(SKAction.repeatForever(
             SKAction.sequence([SKAction.run() { [weak self] in
                 self?.spawnCat()
@@ -74,7 +84,7 @@ class GameScene: SKScene {
         
         if DataStore.destination.x > DataStore.zombie.position.x{
             DataStore.moveRight = true
-            var pos: CGFloat = DataStore.zombie.position.x + size.width/4
+            let pos: CGFloat = DataStore.zombie.position.x + size.width/4
 //            pos = pos > size.width/2 ? pos : size.width/2
             let transitionAnimate = SKAction.moveTo(x: pos, duration: 0.5)
             DataStore.cameraNode.run(transitionAnimate)
@@ -90,7 +100,7 @@ class GameScene: SKScene {
         }
         if DataStore.destination.x < DataStore.zombie.position.x {
             DataStore.moveRight = false
-            var pos: CGFloat = DataStore.zombie.position.x - size.width/4
+            let pos: CGFloat = DataStore.zombie.position.x - size.width/4
 //            pos = pos > size.width/2 ? pos : size.width/2
             let transitionAnimate = SKAction.moveTo(x: pos, duration: 0.5)
             DataStore.cameraNode.run(transitionAnimate)
@@ -107,7 +117,7 @@ class GameScene: SKScene {
         
         if(DataStore.destination - DataStore.zombie.position).length() > (CGFloat(DataStore.dt) * DataStore.zombieMovePointsPerSec){
             move(sprite: DataStore.zombie,velocity: DataStore.velocity)
-            rotate(sprite: DataStore.zombie, direction: DataStore.velocity, rotateRadiansPerSecond: 3)
+            SpawnAndAnimations.rotate(sprite: DataStore.zombie, direction: DataStore.velocity, rotateRadiansPerSecond: 3)
         }else{
             DataStore.zombie.removeAction(forKey: "ZombieWalk")
         }
@@ -193,155 +203,58 @@ class GameScene: SKScene {
         }
     }
     
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+    }
+    
     func boundsCheckZombie() {
         let bottomLeft = CGPoint(x: DataStore.zombie.size.width/2 + cameraRect.minX, y: cameraRect.minY + DataStore.zombie.size.height / 2)
         let topRight = CGPoint(x: cameraRect.maxX - DataStore.zombie.size.width / 2, y: cameraRect.maxY - DataStore.zombie.size.height / 2)
         
-        if DataStore.zombie.position.x <= bottomLeft.x {
-            DataStore.zombie.position.x = bottomLeft.x
-            DataStore.velocity.x = -DataStore.velocity.x
-        }
-        if DataStore.zombie.position.x >= topRight.x {
-            DataStore.zombie.position.x = topRight.x
-            DataStore.velocity.x = -DataStore.velocity.x
-        }
-        if DataStore.zombie.position.y <= bottomLeft.y {
-            DataStore.zombie.position.y = bottomLeft.y
-            DataStore.velocity.y = -DataStore.velocity.y
-        }
-        if DataStore.zombie.position.y >= topRight.y {
-            DataStore.zombie.position.y = topRight.y
-            DataStore.velocity.y = -DataStore.velocity.y
-        }
-    }
-    
-    func rotate(sprite: SKSpriteNode, direction: CGPoint, rotateRadiansPerSecond : CGFloat) {
-        let shortest = shortestAngleBetween(angle1: sprite.zRotation, angle2: DataStore.velocity.angle)
-        let amountToRotate = min(rotateRadiansPerSecond * CGFloat(DataStore.dt), abs(shortest))
-        sprite.zRotation += shortest.sign() * amountToRotate
+        SpawnAndAnimations.boundsCheckZombie(bottomLeft: bottomLeft, topRight: topRight)
     }
     
     func spawnEnemyPrimary(){
-        let enemy = SKSpriteNode(imageNamed: "enemy")
-        enemy.name = "enemy"
-        enemy.setScale(0.8)
-        enemy.position = CGPoint(x: cameraRect.maxX + enemy.size.width, y: CGFloat.random(min: cameraRect.minY + enemy.size.height/2, max: cameraRect.maxY - enemy.size.height/2) )
-        var action = SKAction.moveTo(x: cameraRect.minX - enemy.size.width/2, duration: 4.0)
+        let enemy = SpawnAndAnimations.spawnEnemyPrimary()
+        
+        enemy.position.y =  CGFloat.random(min: cameraRect.minY + enemy.size.height/2, max: cameraRect.maxY - enemy.size.height/2)
+        enemy.position.x = DataStore.moveRight ? cameraRect.maxX + enemy.size.width : cameraRect.minX - enemy.size.width
+        
+        let dest = DataStore.moveRight ? cameraRect.minX - enemy.size.width/2 : cameraRect.maxX + enemy.size.width/2
+        let  action = SKAction.moveTo(x: dest, duration: 4.0)
+        
         let actionRemove = SKAction.removeFromParent()
-        
-        if !DataStore.moveRight{
-            enemy.xScale = -0.8
-            enemy.position.x = cameraRect.minX - enemy.size.width
-            action = SKAction.moveTo(x: cameraRect.maxX + enemy.size.width/2, duration: 4.0)
-        }
-        
         addChild(enemy)
         enemy.run(SKAction.sequence([action,actionRemove]))
     }
     
     func spawnCat() {
-        let cat = SKSpriteNode(imageNamed: "cat")
+        let cat = SpawnAndAnimations.spawnCat()
         cat.position = CGPoint(
             x: CGFloat.random(min: cameraRect.minX + cat.size.width/2,
                               max: cameraRect.maxX - cat.size.width/2),
             y: CGFloat.random(min: cameraRect.minY + cat.size.height/2,
                               max: cameraRect.maxY - cat.size.height/2))
-        cat.name = "cat"
-        cat.setScale(0)
         addChild(cat)
         
-        cat.zRotation = -π / 16.0
-        let leftWiggle = SKAction.rotate(byAngle: π/8.0, duration: 0.5)
-        let rightWiggle = leftWiggle.reversed()
-        let fullWiggle = SKAction.sequence([leftWiggle, rightWiggle])
-        
-        let scaleUp = SKAction.scale(by: 1.2, duration: 0.25)
-        let scaleDown = SKAction.scale(by: 1/1.2, duration: 0.25)
-        let fullScale = SKAction.sequence([scaleUp,scaleDown,scaleUp,scaleDown])
-        
-        let group = SKAction.group([fullWiggle,fullScale])
-        let groupWait = SKAction.repeat(group, count: 10)
-        
-        let appear = SKAction.scale(to: 1.0, duration: 0.5)
-        let disappear = SKAction.scale(to: 0, duration: 0.5)
-        let removeFromParent = SKAction.removeFromParent()
-        let actions = [appear, groupWait, disappear, removeFromParent]
-        cat.run(SKAction.sequence(actions))
+        cat.run(SpawnAndAnimations.catAnimation())
     }
     
-    func zombieHit(object: SKSpriteNode){
-        switch object.name {
-        case "cat":do {
-//            print("cat removed")
-//            object.removeFromParent()
-            object.removeAllActions()
-            object.setScale(1.0)
-            object.zRotation = 0
-            object.name = "train"
-            let greenAction = SKAction.colorize(with: UIColor.green, colorBlendFactor: 0.8, duration: TimeInterval(1.0))
-            object.run(greenAction)
-            DataStore.catsInTrain += 1
-            run(SKAction.playSoundFileNamed("hitCat.wav", waitForCompletion: false))
-            }
-        case "enemy":do {
-                if DataStore.zombieIsBlinking == false{
-//                    print("enemy removed")
-//                    object.removeFromParent()
-                    let blinkTimes = 10.0
-                    let duration = 3.0
-                    let blinkAction = SKAction.customAction(
-                    withDuration: duration) { node, elapsedTime in
-                        let slice = duration / blinkTimes
-                        let remainder = Double(elapsedTime).truncatingRemainder(
-                            dividingBy: slice)
-                        node.isHidden = remainder > slice / 2
-                        DataStore.zombieIsBlinking = true
-                        
-                    }
-                    let isNoLongerBlinkingAction = SKAction.run {
-                        DataStore.zombieIsBlinking = false;
-                        DataStore.zombie.isHidden = false;
-                    }
-                    
-                    let zombieBlinkCodeGroup = SKAction.sequence([blinkAction,isNoLongerBlinkingAction])
-                    DataStore.zombie.run(zombieBlinkCodeGroup)
-                    run(SKAction.playSoundFileNamed("hitCatLady.wav", waitForCompletion: false))
-                    
-                    let changeEnemyColour = SKAction.colorize(with: UIColor.red, colorBlendFactor:0.2, duration: 0.5)
-                    object.run(changeEnemyColour)
-                    
-                    looseCats()
-                    DataStore.lives -= 1
-                }
-            }
-        default:
-            object.removeFromParent()
-        }
-    }
     
     func checkCollisions() {
-        var hitCats: [SKSpriteNode] = []
         enumerateChildNodes(withName: "cat") { node, _ in
             let cat = node as! SKSpriteNode
             if cat.frame.intersects(DataStore.zombie.frame) {
-                hitCats.append(cat)
+                SpawnAndAnimations.zombieHit(object: cat,scene: self)
             }
         }
-        for cat in hitCats {
-            zombieHit(object: cat)
-        }
         
-        var hitEnemies : [SKSpriteNode] = []
         enumerateChildNodes(withName: "enemy") {node, _ in
             let enemy = node as! SKSpriteNode
             if enemy.frame.intersects(DataStore.zombie.frame){
-                hitEnemies.append(enemy)
+                SpawnAndAnimations.zombieHit(object: enemy, scene: self)
             }
         }
         
-        for enemy in hitEnemies{
-            zombieHit(object: enemy)
-        }
     }
     
     func moveTrain() {
@@ -418,15 +331,5 @@ class GameScene: SKScene {
         DataStore.cameraNode.position += amountToMove
     }
     
-    var cameraRect : CGRect {
-        let x = DataStore.cameraNode.position.x - size.width/2
-            + (size.width - DataStore.playableRect.width)/2
-        let y = DataStore.cameraNode.position.y - size.height/2
-            + (size.height - DataStore.playableRect.height)/2
-        return CGRect(
-            x: x,
-            y: y,
-            width: DataStore.playableRect.width,
-            height: DataStore.playableRect.height)
-    }
+    
 }
