@@ -46,7 +46,7 @@ class GameScene: SKScene {
         DataStore.playableRect = CGRect(x: 0, y: playableMargin, width: size.width, height: playableHeight)
         
         for i in 0...1 {
-            let background = backgroundNode()
+            let background = SpawnAndAnimations.backgroundNode()
             background.anchorPoint = CGPoint.zero
             background.position =
                 CGPoint(x: CGFloat(i)*background.size.width, y: 0)
@@ -262,13 +262,7 @@ class GameScene: SKScene {
         enumerateChildNodes(withName: "train") { node, stop in
             if !node.hasActions() {
                 node.xScale = DataStore.moveRight ? 1.0 : -1.0
-                let actionDuration = 0.3
-                let offset = targetPosition - node.position
-                let direction = offset.normalized()
-                let amountToMovePerSec = direction * DataStore.zombieMovePointsPerSec
-                let amountToMove = amountToMovePerSec * CGFloat(actionDuration)
-                let moveAction = SKAction.moveBy(x: amountToMove.x, y: amountToMove.y, duration: actionDuration)
-                node.run(moveAction)
+                SpawnAndAnimations.moveCatTrain(cat: node as! SKSpriteNode, targetPosition: targetPosition)
             }
             targetPosition = node.position
         }
@@ -297,39 +291,4 @@ class GameScene: SKScene {
             
         }
     }
-    
-    func backgroundNode() -> SKSpriteNode {
-        // 1
-        let backgroundNode = SKSpriteNode()
-        backgroundNode.anchorPoint = CGPoint.zero
-        backgroundNode.name = "background"
-        // 2
-        let background1 = SKSpriteNode(imageNamed: "background1")
-        background1.anchorPoint = CGPoint.zero
-        background1.position = CGPoint(x: 0, y: 0)
-        backgroundNode.addChild(background1)
-        // 3
-        let background2 = SKSpriteNode(imageNamed: "background2")
-        background2.anchorPoint = CGPoint.zero
-        background2.position =
-            CGPoint(x: background1.size.width, y: 0)
-        backgroundNode.addChild(background2)
-        // 4
-        backgroundNode.size = CGSize(
-            width: background1.size.width + background2.size.width,
-            height: background1.size.height)
-        
-        backgroundNode.zPosition = -2
-        backgroundNode.name = "background"
-        return backgroundNode
-    }
-    
-    func moveCamera() {
-        let backgroundVelocity =
-            CGPoint(x: DataStore.cameraMovePointsPerSec, y: 0)
-        let amountToMove = backgroundVelocity * CGFloat(DataStore.dt)
-        DataStore.cameraNode.position += amountToMove
-    }
-    
-    
 }
