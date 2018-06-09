@@ -57,14 +57,17 @@ class SpawnAndAnimations: NSObject {
     static func zombieHit(object: SKSpriteNode, scene: GameScene){
         switch object.name {
         case "cat":do {
-            object.removeAllActions()
-            object.setScale(1.0)
-            object.zRotation = 0
-            object.name = "train"
-            let greenAction = SKAction.colorize(with: UIColor.green, colorBlendFactor: 0.8, duration: TimeInterval(1.0))
-            object.run(greenAction)
-            DataStore.catsInTrain += 1
-            scene.run(SKAction.playSoundFileNamed("hitCat.wav", waitForCompletion: false))
+                object.removeAllActions()
+                object.setScale(1.0)
+                object.zRotation = 0
+                object.name = "train"
+                let greenAction = SKAction.colorize(with: UIColor.green, colorBlendFactor: 0.8, duration: TimeInterval(1.0))
+                object.run(greenAction)
+                DataStore.catsInTrain += 1
+                if (DataStore.allowSound){
+                    scene.run(SKAction.playSoundFileNamed("hitCat.wav", waitForCompletion: false))
+                    
+                }
             }
         case "enemy":do {
                 if DataStore.zombieIsBlinking == false{
@@ -86,7 +89,10 @@ class SpawnAndAnimations: NSObject {
                     
                     let zombieBlinkCodeGroup = SKAction.sequence([blinkAction,isNoLongerBlinkingAction])
                     DataStore.zombie.run(zombieBlinkCodeGroup)
-                    scene.run(SKAction.playSoundFileNamed("hitCatLady.wav", waitForCompletion: false))
+                    if(DataStore.allowSound){
+                        scene.run(SKAction.playSoundFileNamed("hitCatLady.wav", waitForCompletion: false))
+                        
+                    }
                     
                     let changeEnemyColour = SKAction.colorize(with: UIColor.red, colorBlendFactor:0.2, duration: 0.5)
                     object.run(changeEnemyColour)
@@ -159,6 +165,21 @@ class SpawnAndAnimations: NSObject {
         let amountToMove = amountToMovePerSec * CGFloat(actionDuration)
         let moveAction = SKAction.moveBy(x: amountToMove.x, y: amountToMove.y, duration: actionDuration)
         cat.run(moveAction)
+    }
+    
+    static func setPlayButton(){
+        DataStore.playButton.setScale(0.8)
+        DataStore.playButton.zPosition = 10
+        let buttonFirstAction = SKAction.scale(by: 0.5, duration: 0.5)
+        let delay = SKAction.wait(forDuration: 0.2)
+        let buttonSecondAction = buttonFirstAction.reversed()
+        let buttonActionSequence = SKAction.sequence([buttonFirstAction,delay,buttonSecondAction,delay])
+        DataStore.playButton.run(SKAction.repeatForever(buttonActionSequence))
+    }
+    
+    static func setSoundButton(){
+        DataStore.soundButton.anchorPoint = CGPoint(x: 1, y: 0)
+        DataStore.soundButton.zPosition = 10
     }
     
 }

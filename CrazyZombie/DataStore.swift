@@ -16,6 +16,15 @@ class DataStore: NSObject {
             SKTexture(imageNamed: "zombie2"),
             SKTexture(imageNamed: "zombie3"),
             SKTexture(imageNamed: "zombie4"),]
+    static let playButton : SKSpriteNode = SKSpriteNode.init(imageNamed: "play_button")
+    static var soundButton : SKSpriteNode = SKSpriteNode.init(imageNamed: "sound")
+    static let backgroundMainMenu = SKSpriteNode.init(imageNamed: "MainMenu")
+    
+    static let secondaryEnemyButton : SKSpriteNode = SKSpriteNode.init(imageNamed: "play_button")
+    static let flowerButton : SKSpriteNode = SKSpriteNode.init(imageNamed: "play_button")
+    static let smallFishButton : SKSpriteNode = SKSpriteNode.init(imageNamed: "play_button")
+    static let bigFishButton : SKSpriteNode = SKSpriteNode.init(imageNamed: "play_button")
+    
     static let zombieAnimation = SKAction.animate(with: DataStore.textures, timePerFrame: 0.1)
     static let cameraNode: SKCameraNode = SKCameraNode()
     
@@ -37,6 +46,6 @@ class DataStore: NSObject {
     
     static let π = CGFloat.pi
     
-    
+    static var allowSound : Bool = true
     
 }

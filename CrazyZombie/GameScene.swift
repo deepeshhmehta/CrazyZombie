@@ -70,8 +70,9 @@ class GameScene: SKScene {
             SKAction.sequence([SKAction.run() { [weak self] in
                 self?.spawnCat()
                 },SKAction.wait(forDuration: TimeInterval(CGFloat.random(min: 1.0, max: 5.0)))])))
-        
-        playBackgroundMusic(filename: "backgroundMusic.mp3")
+        if DataStore.allowSound{
+            playBackgroundMusic(filename: "backgroundMusic.mp3")
+        }
     }
     
     override func update(_ currentTime: TimeInterval) {

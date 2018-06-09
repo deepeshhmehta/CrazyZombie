@@ -40,7 +40,7 @@ class GameOverScene: SKScene{
             // 3
             view.presentScene(mainMenuScene, transition: reveal)
         }
-        let seq = SKAction.sequence([sound,timer,action])
+        let seq = SKAction.sequence(DataStore.allowSound ? [sound,timer,action] : [timer,action])
         run(seq)
     }
         
