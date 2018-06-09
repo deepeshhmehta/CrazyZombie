@@ -16,14 +16,14 @@ class DataStore: NSObject {
             SKTexture(imageNamed: "zombie2"),
             SKTexture(imageNamed: "zombie3"),
             SKTexture(imageNamed: "zombie4"),]
+    
     static let playButton : SKSpriteNode = SKSpriteNode.init(imageNamed: "play_button")
     static var soundButton : SKSpriteNode = SKSpriteNode.init(imageNamed: "sound")
     static let backgroundMainMenu = SKSpriteNode.init(imageNamed: "MainMenu")
-    
-    static let secondaryEnemyButton : SKSpriteNode = SKSpriteNode.init(imageNamed: "play_button")
-    static let flowerButton : SKSpriteNode = SKSpriteNode.init(imageNamed: "play_button")
-    static let smallFishButton : SKSpriteNode = SKSpriteNode.init(imageNamed: "play_button")
-    static let bigFishButton : SKSpriteNode = SKSpriteNode.init(imageNamed: "play_button")
+    static var secondaryEnemyButton : SKSpriteNode = SKSpriteNode.init(imageNamed: "enemySecondary")
+    static var flowerButton : SKSpriteNode = SKSpriteNode.init(imageNamed: "sunflower")
+    static var smallFishButton : SKSpriteNode = SKSpriteNode.init(imageNamed: "smallFish")
+    static var bigFishButton : SKSpriteNode = SKSpriteNode.init(imageNamed: "bigFish")
     
     static let zombieAnimation = SKAction.animate(with: DataStore.textures, timePerFrame: 0.1)
     static let cameraNode: SKCameraNode = SKCameraNode()
@@ -43,9 +43,15 @@ class DataStore: NSObject {
     static var zombieIsBlinking = false
     static var gameOver = false
     static var moveRight = false
+    static var won = false
+    static var allowSound : Bool = true
+    static var secondaryEnemyEnabled: Bool = false
+    static var flowerEnabled: Bool = false
+    static var smallFishEnabled: Bool = false
+    static var bigFishEnabled: Bool = false
     
     static let π = CGFloat.pi
     
-    static var allowSound : Bool = true
+    
     
 }

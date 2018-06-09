@@ -33,9 +33,23 @@ class MainMenuScene: SKScene {
         SpawnAndAnimations.setSoundButton()
         DataStore.soundButton.position = CGPoint(x: DataStore.playableRect.maxX, y: DataStore.playableRect.minY)
         
+        SpawnAndAnimations.setOptionButton(button: &DataStore.secondaryEnemyButton)
+        SpawnAndAnimations.setOptionButton(button: &DataStore.smallFishButton)
+        SpawnAndAnimations.setOptionButton(button: &DataStore.flowerButton)
+        SpawnAndAnimations.setOptionButton(button: &DataStore.bigFishButton)
+        
+        DataStore.secondaryEnemyButton.position.y = DataStore.playableRect.maxY - (DataStore.secondaryEnemyButton.size.height)
+        DataStore.flowerButton.position.y = DataStore.secondaryEnemyButton.position.y - (DataStore.secondaryEnemyButton.size.height + DataStore.flowerButton.size.height) * 0.75
+        DataStore.smallFishButton.position.y = DataStore.flowerButton.position.y - (DataStore.flowerButton.size.height + DataStore.smallFishButton.size.height) * 0.75
+        DataStore.bigFishButton.position.y = DataStore.smallFishButton.position.y - (DataStore.smallFishButton.size.height + DataStore.bigFishButton.size.height) * 0.75
+        
         addChild(DataStore.backgroundMainMenu)
         addChild(DataStore.playButton)
         addChild(DataStore.soundButton)
+        addChild(DataStore.secondaryEnemyButton)
+        addChild(DataStore.smallFishButton)
+        addChild(DataStore.bigFishButton)
+        addChild(DataStore.flowerButton)
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -63,6 +77,38 @@ class MainMenuScene: SKScene {
                     DataStore.allowSound = true
                     DataStore.soundButton.texture = SKTexture(imageNamed: "sound")
                 }
+            }
+            
+            if(DataStore.secondaryEnemyButton.contains(touch.location(in: self))){
+                print("Secondary Enemy Switch Touched")
+                DataStore.secondaryEnemyEnabled = !DataStore.secondaryEnemyEnabled
+                
+                let colourAction = SKAction.colorize(with:  UIColor.green, colorBlendFactor: DataStore.secondaryEnemyEnabled ? 1.0 : 0.0, duration: 0.0)
+                DataStore.secondaryEnemyButton.run(colourAction)
+            }
+            
+            if(DataStore.flowerButton.contains(touch.location(in: self))){
+                print("Flower Switch Touched")
+                DataStore.flowerEnabled = !DataStore.flowerEnabled
+                
+                let colourAction = SKAction.colorize(with:  UIColor.green, colorBlendFactor: DataStore.flowerEnabled ? 1.0 : 0.0, duration: 0.0)
+                DataStore.flowerButton.run(colourAction)
+            }
+            
+            if(DataStore.smallFishButton.contains(touch.location(in: self))){
+                print("small fish Switch Touched")
+                DataStore.smallFishEnabled = !DataStore.smallFishEnabled
+                
+                let colourAction = SKAction.colorize(with:  UIColor.green, colorBlendFactor: DataStore.smallFishEnabled ? 1.0 : 0.0, duration: 0.0)
+                DataStore.smallFishButton.run(colourAction)
+            }
+            
+            if(DataStore.bigFishButton.contains(touch.location(in: self))){
+                print("Flower Switch Touched")
+                DataStore.bigFishEnabled = !DataStore.bigFishEnabled
+                
+                let colourAction = SKAction.colorize(with:  UIColor.green, colorBlendFactor: DataStore.bigFishEnabled ? 1.0 : 0.0, duration: 0.0)
+                DataStore.bigFishButton.run(colourAction)
             }
         }
     }

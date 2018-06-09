@@ -182,4 +182,17 @@ class SpawnAndAnimations: NSObject {
         DataStore.soundButton.zPosition = 10
     }
     
+    static func setOptionButton(button: inout SKSpriteNode){
+        button.zRotation = -1
+        button.size = CGSize(width: 20.0, height: 20.0)
+        button.setScale(9.0)
+        button.position.x = DataStore.playableRect.minX + button.size.width
+        let optionButtonRotateLeft = SKAction.rotate(byAngle: 2, duration: 0.5)
+        let optionButtonSizeUp = SKAction.scale(by: 1.2, duration: 0.25)
+        let shake = SKAction.sequence([optionButtonRotateLeft,optionButtonRotateLeft.reversed()])
+        let shiver = SKAction.sequence([optionButtonSizeUp,optionButtonSizeUp.reversed(),optionButtonSizeUp,optionButtonSizeUp.reversed()])
+        let action = SKAction.group([shake,shiver])
+        button.run(SKAction.repeatForever(action))
+    }
+    
 }

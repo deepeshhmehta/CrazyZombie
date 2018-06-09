@@ -129,7 +129,8 @@ class GameScene: SKScene {
         if DataStore.lives < 0 && DataStore.gameOver == false{
             DataStore.gameOver = true
             print("Lost")
-            let gameOverScene = GameOverScene(size: size, won: false)
+            DataStore.won = false
+            let gameOverScene = GameOverScene(size: size)
             gameOverScene.scaleMode = scaleMode
             let reveal = SKTransition.doorsOpenHorizontal(withDuration: 1.0)
             backgroundMusicPlayer.stop()
@@ -139,7 +140,8 @@ class GameScene: SKScene {
         if DataStore.catsInTrain >= 15 && DataStore.gameOver == false{
             DataStore.gameOver = true
             print("Won")
-            let gameWonScene = GameOverScene(size: size, won: true)
+            DataStore.won = true
+            let gameWonScene = GameOverScene(size: size)
             gameWonScene.scaleMode = scaleMode
             let reveal = SKTransition.doorsOpenHorizontal(withDuration: 1.0)
             backgroundMusicPlayer.stop()
