@@ -61,17 +61,35 @@ class GameScene: SKScene {
         
         addChild(SpawnAndAnimations.spawnZombie(x: size.width/4, y: 400))
 
-        run(SKAction.repeatForever(
-            SKAction.sequence([SKAction.run() { [weak self] in
-                self?.spawnEnemyPrimary()
-                },SKAction.wait(forDuration: TimeInterval(CGFloat.random(min: 2.0, max: 5.0)))])))
+        let primaryAction = SKAction.repeatForever(SKAction.sequence([
+                    SKAction.run() { [weak self] in
+                        self?.spawnEnemy(type: "primary")
+                        
+                    },
+                    SKAction.wait(forDuration: TimeInterval(CGFloat.random(min: 1.0, max: 5.0) ))
+                ])
+            )
+        run(primaryAction)
         
         run(SKAction.repeatForever(
             SKAction.sequence([SKAction.run() { [weak self] in
                 self?.spawnCat()
                 },SKAction.wait(forDuration: TimeInterval(CGFloat.random(min: 1.0, max: 5.0)))])))
+        
         if DataStore.allowSound{
             playBackgroundMusic(filename: "backgroundMusic.mp3")
+        }
+        
+        if(DataStore.secondaryEnemyEnabled){
+            let secondaryAction = SKAction.repeatForever(
+                                    SKAction.sequence([
+                                        SKAction.run() { [weak self] in
+                                            self?.spawnEnemy(type: "secondary")
+                                        },
+                                        SKAction.wait(forDuration: TimeInterval(CGFloat.random(min: 2.0, max: 5.0)))
+                                        ])
+                                    )
+            run(secondaryAction)
         }
     }
     
@@ -85,8 +103,7 @@ class GameScene: SKScene {
         
         if DataStore.destination.x > DataStore.zombie.position.x{
             DataStore.moveRight = true
-            let pos: CGFloat = DataStore.zombie.position.x + size.width/4
-//            pos = pos > size.width/2 ? pos : size.width/2
+            let pos: CGFloat = DataStore.zombie.position.x + (DataStore.secondaryEnemyEnabled ? 0 : size.width/4)
             let transitionAnimate = SKAction.moveTo(x: pos, duration: 0.5)
             DataStore.cameraNode.run(transitionAnimate)
             
@@ -101,7 +118,7 @@ class GameScene: SKScene {
         }
         if DataStore.destination.x < DataStore.zombie.position.x {
             DataStore.moveRight = false
-            let pos: CGFloat = DataStore.zombie.position.x - size.width/4
+            let pos: CGFloat = DataStore.zombie.position.x - (DataStore.secondaryEnemyEnabled ? 0 : size.width/4)
 //            pos = pos > size.width/2 ? pos : size.width/2
             let transitionAnimate = SKAction.moveTo(x: pos, duration: 0.5)
             DataStore.cameraNode.run(transitionAnimate)
@@ -223,6 +240,32 @@ class GameScene: SKScene {
         enemy.position.x = DataStore.moveRight ? cameraRect.maxX + enemy.size.width : cameraRect.minX - enemy.size.width
         
         let dest = DataStore.moveRight ? cameraRect.minX - enemy.size.width/2 : cameraRect.maxX + enemy.size.width/2
+        let  action = SKAction.moveTo(x: dest, duration: 4.0)
+        
+        let actionRemove = SKAction.removeFromParent()
+        addChild(enemy)
+        enemy.run(SKAction.sequence([action,actionRemove]))
+    }
+    
+    func spawnEnemy(type: String){
+        let enemy = SpawnAndAnimations.spawnEnemy(type: type)
+        
+        enemy.position.y =  CGFloat.random(min: cameraRect.minY + enemy.size.height/2, max: cameraRect.maxY - enemy.size.height/2)
+        
+        var dest: CGFloat
+        switch type {
+        case "primary":
+            enemy.position.x = DataStore.moveRight ? cameraRect.maxX + enemy.size.width : cameraRect.minX - enemy.size.width
+            dest = DataStore.moveRight ? cameraRect.minX - enemy.size.width/2 : cameraRect.maxX + enemy.size.width/2
+        case "secondary":
+            enemy.position.x = DataStore.moveRight ? cameraRect.minX - enemy.size.width: cameraRect.maxX + enemy.size.width
+            dest = DataStore.moveRight ? cameraRect.maxX + enemy.size.width/2 : cameraRect.minX - enemy.size.width/2
+        default:
+            enemy.position.x = DataStore.moveRight ? cameraRect.maxX + enemy.size.width : cameraRect.minX - enemy.size.width
+            dest = DataStore.moveRight ? cameraRect.minX - enemy.size.width/2 : cameraRect.maxX + enemy.size.width/2
+        }
+        
+        
         let  action = SKAction.moveTo(x: dest, duration: 4.0)
         
         let actionRemove = SKAction.removeFromParent()

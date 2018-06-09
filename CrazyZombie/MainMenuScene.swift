@@ -80,7 +80,6 @@ class MainMenuScene: SKScene {
             }
             
             if(DataStore.secondaryEnemyButton.contains(touch.location(in: self))){
-                print("Secondary Enemy Switch Touched")
                 DataStore.secondaryEnemyEnabled = !DataStore.secondaryEnemyEnabled
                 
                 let colourAction = SKAction.colorize(with:  UIColor.green, colorBlendFactor: DataStore.secondaryEnemyEnabled ? 1.0 : 0.0, duration: 0.0)
@@ -88,7 +87,6 @@ class MainMenuScene: SKScene {
             }
             
             if(DataStore.flowerButton.contains(touch.location(in: self))){
-                print("Flower Switch Touched")
                 DataStore.flowerEnabled = !DataStore.flowerEnabled
                 
                 let colourAction = SKAction.colorize(with:  UIColor.green, colorBlendFactor: DataStore.flowerEnabled ? 1.0 : 0.0, duration: 0.0)
@@ -96,7 +94,6 @@ class MainMenuScene: SKScene {
             }
             
             if(DataStore.smallFishButton.contains(touch.location(in: self))){
-                print("small fish Switch Touched")
                 DataStore.smallFishEnabled = !DataStore.smallFishEnabled
                 
                 let colourAction = SKAction.colorize(with:  UIColor.green, colorBlendFactor: DataStore.smallFishEnabled ? 1.0 : 0.0, duration: 0.0)
@@ -104,7 +101,6 @@ class MainMenuScene: SKScene {
             }
             
             if(DataStore.bigFishButton.contains(touch.location(in: self))){
-                print("Flower Switch Touched")
                 DataStore.bigFishEnabled = !DataStore.bigFishEnabled
                 
                 let colourAction = SKAction.colorize(with:  UIColor.green, colorBlendFactor: DataStore.bigFishEnabled ? 1.0 : 0.0, duration: 0.0)

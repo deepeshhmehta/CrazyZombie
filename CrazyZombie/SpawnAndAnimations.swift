@@ -16,10 +16,11 @@ class SpawnAndAnimations: NSObject {
         return DataStore.zombie
     }
     
-    static func spawnEnemyPrimary() -> SKSpriteNode{
+    static func spawnEnemy(type: String) -> SKSpriteNode{
         let enemy = SKSpriteNode.init(imageNamed: "enemy")
         enemy.name = "enemy"
-        enemy.setScale(DataStore.moveRight ? 0.8 : -0.8)
+        let multiplcationFactor: CGFloat = (type == "primary") ? 1.0 : (type == "secondary") ? -1.0 : 0.0
+        enemy.setScale(DataStore.moveRight ? 0.8 * multiplcationFactor : -0.8 * multiplcationFactor)
         return enemy
     }
     
@@ -184,8 +185,7 @@ class SpawnAndAnimations: NSObject {
     
     static func setOptionButton(button: inout SKSpriteNode){
         button.zRotation = -1
-        button.size = CGSize(width: 20.0, height: 20.0)
-        button.setScale(9.0)
+        button.size = CGSize(width: 180.0, height: 180.0)
         button.position.x = DataStore.playableRect.minX + button.size.width
         let optionButtonRotateLeft = SKAction.rotate(byAngle: 2, duration: 0.5)
         let optionButtonSizeUp = SKAction.scale(by: 1.2, duration: 0.25)
