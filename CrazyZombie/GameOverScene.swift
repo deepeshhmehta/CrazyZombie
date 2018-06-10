@@ -12,6 +12,10 @@ import GameplayKit
 class GameOverScene: SKScene{
     
     override func didMove(to view: SKView) {
+        DataStore.zombie.removeFromParent()
+        DataStore.livesLabel.removeFromParent()
+        DataStore.catsInTrainLabel.removeFromParent()
+        
         
         let showImage = SKSpriteNode.init(imageNamed: DataStore.won ? "YouWin" : "YouLose")
         showImage.size.width = self.size.width

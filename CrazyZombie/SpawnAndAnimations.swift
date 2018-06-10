@@ -21,19 +21,32 @@ class SpawnAndAnimations: NSObject {
     }
     
     static func flowerAnimation() -> SKAction{
-        let tenSeconds = SKAction.repeat(SpawnAndAnimations.optionButtonAnimation(), count: 10)
+        let threeSeconds = SKAction.repeat(SpawnAndAnimations.optionButtonAnimation(), count: 3)
         let max = DataStore.playableRect.maxY - DataStore.flowerButton.size.height
         let min = DataStore.playableRect.minY + DataStore.flowerButton.size.height
-        let moveToScreen = SKAction.moveTo(y: CGFloat.random(min: min , max: max) , duration: 0.5)
+        let moveToScreen = SKAction.moveTo(y: CGFloat.random(min: min , max: max) , duration: 1.0)
         let actionDisapear = SKAction.scale(to: 0.0, duration: 0.5)
         let removeAction = SKAction.removeFromParent()
         let flowerAnimation = SKAction.sequence([
             moveToScreen,
-            tenSeconds,
+            threeSeconds,
             actionDisapear,
             removeAction
             ])
         return flowerAnimation
+    }
+    static func fishAnimation() -> SKAction{
+        let appear = SKAction.scale(to: 1.0, duration: 0.5)
+        let fourSeconds = SKAction.repeat(SpawnAndAnimations.optionButtonAnimation(), count: 4)
+        let actionDisapear = SKAction.scale(to: 0.0, duration: 0.5)
+        let removeAction = SKAction.removeFromParent()
+        let smallFishAnimation = SKAction.sequence([
+            appear,
+            fourSeconds,
+            actionDisapear,
+            removeAction
+            ])
+        return smallFishAnimation
     }
     
     
@@ -68,6 +81,16 @@ class SpawnAndAnimations: NSObject {
         flower.position.y = DataStore.playableRect.maxY + flower.size.height/2
         flower.run(SpawnAndAnimations.flowerAnimation())
         return flower
+    }
+    
+    static func spawnSmallFish() -> SKSpriteNode{
+        let smallfish = SKSpriteNode.init(imageNamed: "smallFish")
+        smallfish.name = "smallFish"
+        smallfish.setScale(0.0)
+        smallfish.size = CGSize(width: 190.0, height: 190.0)
+        smallfish.position.y = CGFloat.random(min: DataStore.playableRect.minY + smallfish.size.height, max: DataStore.playableRect.maxY - smallfish.size.height)
+        smallfish.run(SpawnAndAnimations.fishAnimation())
+        return smallfish
     }
     
     static func catAnimation() -> SKAction{
@@ -147,6 +170,39 @@ class SpawnAndAnimations: NSObject {
                     
                 }
             }
+        case "smallFish":do {
+            DataStore.zombieIsBlinking = true
+            object.removeFromParent()
+            let changeColor = SKAction.colorize(with: UIColor.orange, colorBlendFactor: 1.0, duration: 0.5)
+            let changeColorCat = SKAction.run {
+                scene.enumerateChildNodes(withName: "train") { node, stop in
+                    node.run(changeColor)
+                }
+            }
+            let changeColorBack = SKAction.colorize(withColorBlendFactor: 0.0, duration: 0.5)
+            let changeColorBackCatColour = SKAction.colorize(with: UIColor.green, colorBlendFactor: 1.0, duration: 0.5)
+            let changeColorBackCat = SKAction.run {
+                scene.enumerateChildNodes(withName: "train") { node, stop in
+                    node.run(changeColorBackCatColour)
+                }
+            }
+            let delay = SKAction.wait(forDuration: 4.0)
+            let logic = SKAction.run {
+                DataStore.zombieIsBlinking = false
+            }
+            let actionSequence = SKAction.sequence([
+                changeColor, changeColorCat,
+                delay,
+                changeColorBack, changeColorBackCat,
+                logic
+                ])
+            DataStore.zombie.run(actionSequence)
+            
+            if(DataStore.allowSound){
+                scene.run(SKAction.playSoundFileNamed("flowerTouched.wav", waitForCompletion: false))
+                
+            }
+        }
         default:
             object.removeFromParent()
         }

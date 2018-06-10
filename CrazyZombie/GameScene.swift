@@ -113,6 +113,18 @@ class GameScene: SKScene {
             )
             run(flowerSpawnAction)
         }
+        
+        if(DataStore.smallFishEnabled){
+            let smallFishSpawnAction = SKAction.repeatForever(
+                SKAction.sequence([
+                    SKAction.run() { [weak self] in
+                        self?.spawnSmallFish()
+                    },
+                    SKAction.wait(forDuration: 8)
+                    ])
+            )
+            run(smallFishSpawnAction)
+        }
     }
     
     override func update(_ currentTime: TimeInterval) {
@@ -297,6 +309,12 @@ class GameScene: SKScene {
         addChild(flower)
     }
     
+    func spawnSmallFish(){
+        let smallfish = SpawnAndAnimations.spawnSmallFish()
+        smallfish.position.x = CGFloat.random(min: cameraRect.minX + smallfish.size.width, max: cameraRect.maxX - smallfish.size.width)
+        addChild(smallfish)
+    }
+    
     func checkCollisions() {
         enumerateChildNodes(withName: "cat") { node, _ in
             let cat = node as! SKSpriteNode
@@ -316,6 +334,13 @@ class GameScene: SKScene {
             let flower = node as! SKSpriteNode
             if flower.frame.intersects(DataStore.zombie.frame){
                 SpawnAndAnimations.zombieHit(object: flower, scene: self)
+            }
+        }
+        
+        enumerateChildNodes(withName: "smallFish") {node, _ in
+            let smallFish = node as! SKSpriteNode
+            if smallFish.frame.intersects(DataStore.zombie.frame){
+                SpawnAndAnimations.zombieHit(object: smallFish, scene: self)
             }
         }
         
