@@ -91,6 +91,18 @@ class GameScene: SKScene {
                                     )
             run(secondaryAction)
         }
+        
+        if(DataStore.flowerEnabled){
+            let flowerSpawnAction = SKAction.repeatForever(
+                SKAction.sequence([
+                    SKAction.run() { [weak self] in
+                        self?.spawnFlower()
+                    },
+                    SKAction.wait(forDuration: TimeInterval(CGFloat.random(min: 5.0, max: 10.0)))
+                    ])
+            )
+            run(flowerSpawnAction)
+        }
     }
     
     override func update(_ currentTime: TimeInterval) {
@@ -233,20 +245,6 @@ class GameScene: SKScene {
         SpawnAndAnimations.boundsCheckZombie(bottomLeft: bottomLeft, topRight: topRight)
     }
     
-    func spawnEnemyPrimary(){
-        let enemy = SpawnAndAnimations.spawnEnemyPrimary()
-        
-        enemy.position.y =  CGFloat.random(min: cameraRect.minY + enemy.size.height/2, max: cameraRect.maxY - enemy.size.height/2)
-        enemy.position.x = DataStore.moveRight ? cameraRect.maxX + enemy.size.width : cameraRect.minX - enemy.size.width
-        
-        let dest = DataStore.moveRight ? cameraRect.minX - enemy.size.width/2 : cameraRect.maxX + enemy.size.width/2
-        let  action = SKAction.moveTo(x: dest, duration: 4.0)
-        
-        let actionRemove = SKAction.removeFromParent()
-        addChild(enemy)
-        enemy.run(SKAction.sequence([action,actionRemove]))
-    }
-    
     func spawnEnemy(type: String){
         let enemy = SpawnAndAnimations.spawnEnemy(type: type)
         
@@ -285,6 +283,11 @@ class GameScene: SKScene {
         cat.run(SpawnAndAnimations.catAnimation())
     }
     
+    func spawnFlower(){
+        let flower = SpawnAndAnimations.spawnFlower()
+        flower.position.x = CGFloat.random(min: cameraRect.minX + flower.size.width, max: cameraRect.maxX - flower.size.width)
+        addChild(flower)
+    }
     
     func checkCollisions() {
         enumerateChildNodes(withName: "cat") { node, _ in
@@ -298,6 +301,13 @@ class GameScene: SKScene {
             let enemy = node as! SKSpriteNode
             if enemy.frame.intersects(DataStore.zombie.frame){
                 SpawnAndAnimations.zombieHit(object: enemy, scene: self)
+            }
+        }
+        
+        enumerateChildNodes(withName: "flower") {node, _ in
+            let flower = node as! SKSpriteNode
+            if flower.frame.intersects(DataStore.zombie.frame){
+                SpawnAndAnimations.zombieHit(object: flower, scene: self)
             }
         }
         

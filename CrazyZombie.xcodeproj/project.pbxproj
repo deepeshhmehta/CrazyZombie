@@ -22,6 +22,7 @@
 		79AC111120C96D820075EBE0 /* MainMenuScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79AC111020C96D820075EBE0 /* MainMenuScene.swift */; };
 		79B69E4220CB18E100979FE5 /* DataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B69E4120CB18E100979FE5 /* DataStore.swift */; };
 		79B69E4420CB1BFE00979FE5 /* SpawnAndAnimations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B69E4320CB1BFE00979FE5 /* SpawnAndAnimations.swift */; };
+		79B69E4720CCDDB800979FE5 /* flowerTouched.wav in Resources */ = {isa = PBXBuildFile; fileRef = 79B69E4620CCDDB800979FE5 /* flowerTouched.wav */; };
 		79DB5A6020C5B2A3004863AC /* MyUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79DB5A5F20C5B2A2004863AC /* MyUtils.swift */; };
 /* End PBXBuildFile section */
 
@@ -43,6 +44,7 @@
 		79AC111020C96D820075EBE0 /* MainMenuScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuScene.swift; sourceTree = "<group>"; };
 		79B69E4120CB18E100979FE5 /* DataStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataStore.swift; sourceTree = "<group>"; };
 		79B69E4320CB1BFE00979FE5 /* SpawnAndAnimations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpawnAndAnimations.swift; sourceTree = "<group>"; };
+		79B69E4620CCDDB800979FE5 /* flowerTouched.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = flowerTouched.wav; path = ../../../../../../flowerTouched.wav; sourceTree = "<group>"; };
 		79DB5A5F20C5B2A2004863AC /* MyUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyUtils.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -96,6 +98,7 @@
 		79AC110120C6F1620075EBE0 /* Sounds */ = {
 			isa = PBXGroup;
 			children = (
+				79B69E4620CCDDB800979FE5 /* flowerTouched.wav */,
 				79AC110220C6F1620075EBE0 /* win.wav */,
 				79AC110320C6F1620075EBE0 /* lose.wav */,
 				79AC110420C6F1620075EBE0 /* hitCat.wav */,
@@ -163,6 +166,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				79B69E4720CCDDB800979FE5 /* flowerTouched.wav in Resources */,
 				79AC110820C6F1620075EBE0 /* lose.wav in Resources */,
 				79A5B28820C03322009D367A /* Main.storyboard in Resources */,
 				79AC110B20C6F1620075EBE0 /* backgroundMusic.mp3 in Resources */,

@@ -10,6 +10,33 @@ import UIKit
 import SpriteKit
 
 class SpawnAndAnimations: NSObject {
+    
+    static func optionButtonAnimation() -> SKAction {
+        let optionButtonRotateLeft = SKAction.rotate(byAngle: 2, duration: 0.5)
+        let optionButtonSizeUp = SKAction.scale(by: 1.2, duration: 0.25)
+        let shake = SKAction.sequence([optionButtonRotateLeft,optionButtonRotateLeft.reversed()])
+        let shiver = SKAction.sequence([optionButtonSizeUp,optionButtonSizeUp.reversed(),optionButtonSizeUp,optionButtonSizeUp.reversed()])
+        let action = SKAction.group([shake,shiver])
+        return action
+    }
+    
+    static func flowerAnimation() -> SKAction{
+        let tenSeconds = SKAction.repeat(SpawnAndAnimations.optionButtonAnimation(), count: 10)
+        let max = DataStore.playableRect.maxY - DataStore.flowerButton.size.height
+        let min = DataStore.playableRect.minY + DataStore.flowerButton.size.height
+        let moveToScreen = SKAction.moveTo(y: CGFloat.random(min: min , max: max) , duration: 0.5)
+        let actionDisapear = SKAction.scale(to: 0.0, duration: 0.5)
+        let removeAction = SKAction.removeFromParent()
+        let flowerAnimation = SKAction.sequence([
+            moveToScreen,
+            tenSeconds,
+            actionDisapear,
+            removeAction
+            ])
+        return flowerAnimation
+    }
+    
+    
     static func spawnZombie(x:CGFloat, y:CGFloat) -> SKSpriteNode{
         DataStore.zombie.position = CGPoint(x:x, y:y)
         DataStore.zombie.zPosition = 50
@@ -32,6 +59,15 @@ class SpawnAndAnimations: NSObject {
         
         cat.zRotation = -π / 16.0
         return cat
+    }
+    
+    static func spawnFlower() -> SKSpriteNode{
+        let flower = SKSpriteNode.init(imageNamed: "sunflower")
+        flower.name = "flower"
+        flower.size = CGSize(width: 190.0, height: 190.0)
+        flower.position.y = DataStore.playableRect.maxY + flower.size.height/2
+        flower.run(SpawnAndAnimations.flowerAnimation())
+        return flower
     }
     
     static func catAnimation() -> SKAction{
@@ -100,6 +136,15 @@ class SpawnAndAnimations: NSObject {
                     
                     scene.looseCats()
                     DataStore.lives -= 1
+                }
+            }
+            
+        case "flower":do {
+                DataStore.lives += 1
+                object.removeFromParent()
+                if(DataStore.allowSound){
+                    scene.run(SKAction.playSoundFileNamed("flowerTouched.wav", waitForCompletion: false))
+                    
                 }
             }
         default:
@@ -187,12 +232,7 @@ class SpawnAndAnimations: NSObject {
         button.zRotation = -1
         button.size = CGSize(width: 180.0, height: 180.0)
         button.position.x = DataStore.playableRect.minX + button.size.width
-        let optionButtonRotateLeft = SKAction.rotate(byAngle: 2, duration: 0.5)
-        let optionButtonSizeUp = SKAction.scale(by: 1.2, duration: 0.25)
-        let shake = SKAction.sequence([optionButtonRotateLeft,optionButtonRotateLeft.reversed()])
-        let shiver = SKAction.sequence([optionButtonSizeUp,optionButtonSizeUp.reversed(),optionButtonSizeUp,optionButtonSizeUp.reversed()])
-        let action = SKAction.group([shake,shiver])
-        button.run(SKAction.repeatForever(action))
+        button.run(SKAction.repeatForever(SpawnAndAnimations.optionButtonAnimation()))
     }
     
 }
