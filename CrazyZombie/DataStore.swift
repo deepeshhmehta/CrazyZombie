@@ -51,6 +51,8 @@ class DataStore: NSObject {
     static var bigFishEnabled: Bool = false
     
     static let π = CGFloat.pi
+    static let livesLabel = SKLabelNode(fontNamed: "Chalkduster")
+    static let catsInTrainLabel = SKLabelNode(fontNamed: "Chalkduster")
     
     
     

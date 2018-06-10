@@ -31,6 +31,16 @@ class GameScene: SKScene {
         DataStore.lastUpdateTime = 0
         DataStore.dt = 0
         
+        SpawnAndAnimations.setLabels()
+        DataStore.livesLabel.position = CGPoint(
+            x: -DataStore.playableRect.size.width/2 + CGFloat(20),
+            y: -DataStore.playableRect.size.height/2 + CGFloat(20))
+        DataStore.cameraNode.addChild(DataStore.livesLabel)
+        DataStore.catsInTrainLabel.position = CGPoint(
+            x: DataStore.playableRect.size.width/2 - CGFloat(20),
+            y: -DataStore.playableRect.size.height/2 + CGFloat(20))
+        DataStore.cameraNode.addChild(DataStore.catsInTrainLabel)
+        
 //        print("GameStats")
 //        print("------")
 //        print("lives: \(Values.lives)")
@@ -155,9 +165,8 @@ class GameScene: SKScene {
         boundsCheckZombie()
         moveTrain()
 
-        if DataStore.lives < 0 && DataStore.gameOver == false{
+        if DataStore.lives <= 0 && DataStore.gameOver == false{
             DataStore.gameOver = true
-            print("Lost")
             DataStore.won = false
             let gameOverScene = GameOverScene(size: size)
             gameOverScene.scaleMode = scaleMode
@@ -168,7 +177,6 @@ class GameScene: SKScene {
         
         if DataStore.catsInTrain >= 15 && DataStore.gameOver == false{
             DataStore.gameOver = true
-            print("Won")
             DataStore.won = true
             let gameWonScene = GameOverScene(size: size)
             gameWonScene.scaleMode = scaleMode

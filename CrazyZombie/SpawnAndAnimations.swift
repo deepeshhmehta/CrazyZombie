@@ -150,6 +150,7 @@ class SpawnAndAnimations: NSObject {
         default:
             object.removeFromParent()
         }
+        SpawnAndAnimations.updateLabels()
     }
     
     static func rotate(sprite: SKSpriteNode, direction: CGPoint, rotateRadiansPerSecond : CGFloat) {
@@ -233,6 +234,27 @@ class SpawnAndAnimations: NSObject {
         button.size = CGSize(width: 180.0, height: 180.0)
         button.position.x = DataStore.playableRect.minX + button.size.width
         button.run(SKAction.repeatForever(SpawnAndAnimations.optionButtonAnimation()))
+    }
+    
+    static func setLabels(){
+        DataStore.livesLabel.fontColor = SKColor.black
+        DataStore.livesLabel.fontSize = 100
+        DataStore.livesLabel.zPosition = 150
+        DataStore.livesLabel.horizontalAlignmentMode = .left
+        DataStore.livesLabel.verticalAlignmentMode = .bottom
+        
+        DataStore.catsInTrainLabel.fontColor = SKColor.black
+        DataStore.catsInTrainLabel.fontSize = 100
+        DataStore.catsInTrainLabel.zPosition = 150
+        DataStore.catsInTrainLabel.horizontalAlignmentMode = .right
+        DataStore.catsInTrainLabel.verticalAlignmentMode = .bottom
+        
+        SpawnAndAnimations.updateLabels()
+    }
+    
+    static func updateLabels(){
+        DataStore.livesLabel.text = "Lives: " + String(DataStore.lives)
+        DataStore.catsInTrainLabel.text = "Cats: " + String(DataStore.catsInTrain)
     }
     
 }
