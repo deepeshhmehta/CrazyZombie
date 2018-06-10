@@ -49,6 +49,7 @@ class DataStore: NSObject {
     static var flowerEnabled: Bool = false
     static var smallFishEnabled: Bool = false
     static var bigFishEnabled: Bool = false
+    static var bigFishMode: Bool = false
     
     static let π = CGFloat.pi
     static let livesLabel = SKLabelNode(fontNamed: "Chalkduster")

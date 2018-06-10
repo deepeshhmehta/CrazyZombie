@@ -40,13 +40,13 @@ class SpawnAndAnimations: NSObject {
         let fourSeconds = SKAction.repeat(SpawnAndAnimations.optionButtonAnimation(), count: 4)
         let actionDisapear = SKAction.scale(to: 0.0, duration: 0.5)
         let removeAction = SKAction.removeFromParent()
-        let smallFishAnimation = SKAction.sequence([
+        let fishAnimation = SKAction.sequence([
             appear,
             fourSeconds,
             actionDisapear,
             removeAction
             ])
-        return smallFishAnimation
+        return fishAnimation
     }
     
     
@@ -83,16 +83,15 @@ class SpawnAndAnimations: NSObject {
         return flower
     }
     
-    static func spawnSmallFish() -> SKSpriteNode{
-        let smallfish = SKSpriteNode.init(imageNamed: "smallFish")
-        smallfish.name = "smallFish"
-        smallfish.setScale(0.0)
-        smallfish.size = CGSize(width: 190.0, height: 190.0)
-        smallfish.position.y = CGFloat.random(min: DataStore.playableRect.minY + smallfish.size.height, max: DataStore.playableRect.maxY - smallfish.size.height)
-        smallfish.run(SpawnAndAnimations.fishAnimation())
-        return smallfish
+    static func spawnFish(type: String) -> SKSpriteNode{
+        let fish = SKSpriteNode.init(imageNamed: type + "Fish")
+        fish.name = type + "Fish"
+        fish.setScale(0.0)
+        fish.size = CGSize(width: 190.0, height: 190.0)
+        fish.position.y = CGFloat.random(min: DataStore.playableRect.minY + fish.size.height, max: DataStore.playableRect.maxY - fish.size.height)
+        fish.run(SpawnAndAnimations.fishAnimation())
+        return fish
     }
-    
     static func catAnimation() -> SKAction{
         
         let leftWiggle = SKAction.rotate(byAngle: π/8.0, duration: 0.5)
@@ -198,6 +197,27 @@ class SpawnAndAnimations: NSObject {
                 ])
             DataStore.zombie.run(actionSequence)
             
+            if(DataStore.allowSound){
+                scene.run(SKAction.playSoundFileNamed("flowerTouched.wav", waitForCompletion: false))
+                
+            }
+        }
+        case "bigFish":do {
+            DataStore.bigFishMode = true
+            object.removeFromParent()
+            let changeColor = SKAction.colorize(with: UIColor.blue, colorBlendFactor: 1.0, duration: 0.5)
+            let changeColorBack = SKAction.colorize(withColorBlendFactor: 0.0, duration: 0.5)
+                        let delay = SKAction.wait(forDuration: 4.0)
+            let logic = SKAction.run {
+                DataStore.bigFishMode = false
+            }
+            let actionSequence = SKAction.sequence([
+                changeColor,
+                delay,
+                changeColorBack,
+                logic
+                ])
+            DataStore.zombie.run(actionSequence)
             if(DataStore.allowSound){
                 scene.run(SKAction.playSoundFileNamed("flowerTouched.wav", waitForCompletion: false))
                 

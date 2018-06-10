@@ -67,6 +67,10 @@ func shortestAngleBetween(angle1: CGFloat,
     return angle
 }
 
+func + (left: CGRect, right: CGFloat) -> CGRect{
+    return CGRect(x: left.minX - right/2, y: left.minY - right/2, width: left.width + right, height: left.height + right)
+}
+
 
 func playBackgroundMusic(filename: String) {
     let resourceUrl = Bundle.main.url(forResource:

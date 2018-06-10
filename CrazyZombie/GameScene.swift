@@ -118,12 +118,24 @@ class GameScene: SKScene {
             let smallFishSpawnAction = SKAction.repeatForever(
                 SKAction.sequence([
                     SKAction.run() { [weak self] in
-                        self?.spawnSmallFish()
+                        self?.spawnFish(type: "small")
                     },
                     SKAction.wait(forDuration: 8)
                     ])
             )
             run(smallFishSpawnAction)
+        }
+        
+        if(DataStore.bigFishEnabled){
+            let bigFishSpawnAction = SKAction.repeatForever(
+                SKAction.sequence([
+                    SKAction.run() { [weak self] in
+                        self?.spawnFish(type: "big")
+                    },
+                    SKAction.wait(forDuration: 10)
+                    ])
+            )
+            run(bigFishSpawnAction)
         }
     }
     
@@ -310,15 +322,20 @@ class GameScene: SKScene {
     }
     
     func spawnSmallFish(){
-        let smallfish = SpawnAndAnimations.spawnSmallFish()
+        let smallfish = SpawnAndAnimations.spawnFish(type: "small")
         smallfish.position.x = CGFloat.random(min: cameraRect.minX + smallfish.size.width, max: cameraRect.maxX - smallfish.size.width)
         addChild(smallfish)
+    }
+    func spawnFish(type:String){
+        let fish = SpawnAndAnimations.spawnFish(type: type)
+        fish.position.x = CGFloat.random(min: cameraRect.minX + fish.size.width, max: cameraRect.maxX - fish.size.width)
+        addChild(fish)
     }
     
     func checkCollisions() {
         enumerateChildNodes(withName: "cat") { node, _ in
             let cat = node as! SKSpriteNode
-            if cat.frame.intersects(DataStore.zombie.frame) {
+            if cat.frame.intersects(DataStore.zombie.frame) || (DataStore.bigFishMode && cat.frame.intersects(DataStore.zombie.frame + 400)) {
                 SpawnAndAnimations.zombieHit(object: cat,scene: self)
             }
         }
@@ -341,6 +358,13 @@ class GameScene: SKScene {
             let smallFish = node as! SKSpriteNode
             if smallFish.frame.intersects(DataStore.zombie.frame){
                 SpawnAndAnimations.zombieHit(object: smallFish, scene: self)
+            }
+        }
+        
+        enumerateChildNodes(withName: "bigFish") {node, _ in
+            let bigFish = node as! SKSpriteNode
+            if bigFish.frame.intersects(DataStore.zombie.frame){
+                SpawnAndAnimations.zombieHit(object: bigFish, scene: self)
             }
         }
         
