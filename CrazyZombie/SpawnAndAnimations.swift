@@ -8,10 +8,11 @@
 
 import UIKit
 import SpriteKit
-
+// class defined to write spawn and animations logic. also a few helper functions are written here to take load off the GameScene
 class SpawnAndAnimations: NSObject {
     
-    static func optionButtonAnimation() -> SKAction {
+    //animation required to wiggle and zoom in & out
+    static var wiggleAndZoomInOutAnimation: SKAction{
         let optionButtonRotateLeft = SKAction.rotate(byAngle: 2, duration: 0.5)
         let optionButtonSizeUp = SKAction.scale(by: 1.2, duration: 0.25)
         let shake = SKAction.sequence([optionButtonRotateLeft,optionButtonRotateLeft.reversed()])
@@ -20,8 +21,9 @@ class SpawnAndAnimations: NSObject {
         return action
     }
     
-    static func flowerAnimation() -> SKAction{
-        let threeSeconds = SKAction.repeat(SpawnAndAnimations.optionButtonAnimation(), count: 3)
+    //animation sequence required for flower movement
+    static var flowerAnimation: SKAction{
+        let threeSeconds = SKAction.repeat(SpawnAndAnimations.wiggleAndZoomInOutAnimation, count: 3)
         let max = DataStore.playableRect.maxY - DataStore.flowerButton.size.height
         let min = DataStore.playableRect.minY + DataStore.flowerButton.size.height
         let moveToScreen = SKAction.moveTo(y: CGFloat.random(min: min , max: max) , duration: 1.0)
@@ -35,9 +37,11 @@ class SpawnAndAnimations: NSObject {
             ])
         return flowerAnimation
     }
-    static func fishAnimation() -> SKAction{
+    
+    //animation required for fish
+    static var fishAnimation: SKAction {
         let appear = SKAction.scale(to: 1.0, duration: 0.5)
-        let fourSeconds = SKAction.repeat(SpawnAndAnimations.optionButtonAnimation(), count: 4)
+        let fourSeconds = SKAction.repeat(SpawnAndAnimations.wiggleAndZoomInOutAnimation, count: 4)
         let actionDisapear = SKAction.scale(to: 0.0, duration: 0.5)
         let removeAction = SKAction.removeFromParent()
         let fishAnimation = SKAction.sequence([
@@ -49,50 +53,8 @@ class SpawnAndAnimations: NSObject {
         return fishAnimation
     }
     
-    
-    static func spawnZombie(x:CGFloat, y:CGFloat) -> SKSpriteNode{
-        DataStore.zombie.position = CGPoint(x:x, y:y)
-        DataStore.zombie.zPosition = 50
-        return DataStore.zombie
-    }
-    
-    static func spawnEnemy(type: String) -> SKSpriteNode{
-        let enemy = SKSpriteNode.init(imageNamed: "enemy")
-        enemy.name = "enemy"
-        let multiplcationFactor: CGFloat = (type == "primary") ? 1.0 : (type == "secondary") ? -1.0 : 0.0
-        enemy.setScale(DataStore.moveRight ? 0.8 * multiplcationFactor : -0.8 * multiplcationFactor)
-        return enemy
-    }
-    
-    static func spawnCat() -> SKSpriteNode{
-        let cat = SKSpriteNode(imageNamed: "cat")
-        
-        cat.name = "cat"
-        cat.setScale(0)
-        
-        cat.zRotation = -π / 16.0
-        return cat
-    }
-    
-    static func spawnFlower() -> SKSpriteNode{
-        let flower = SKSpriteNode.init(imageNamed: "sunflower")
-        flower.name = "flower"
-        flower.size = CGSize(width: 190.0, height: 190.0)
-        flower.position.y = DataStore.playableRect.maxY + flower.size.height/2
-        flower.run(SpawnAndAnimations.flowerAnimation())
-        return flower
-    }
-    
-    static func spawnFish(type: String) -> SKSpriteNode{
-        let fish = SKSpriteNode.init(imageNamed: type + "Fish")
-        fish.name = type + "Fish"
-        fish.setScale(0.0)
-        fish.size = CGSize(width: 190.0, height: 190.0)
-        fish.position.y = CGFloat.random(min: DataStore.playableRect.minY + fish.size.height, max: DataStore.playableRect.maxY - fish.size.height)
-        fish.run(SpawnAndAnimations.fishAnimation())
-        return fish
-    }
-    static func catAnimation() -> SKAction{
+    //returns animation sequence required for cats
+    static var catAnimation: SKAction{
         
         let leftWiggle = SKAction.rotate(byAngle: π/8.0, duration: 0.5)
         let rightWiggle = leftWiggle.reversed()
@@ -113,7 +75,55 @@ class SpawnAndAnimations: NSObject {
         return SKAction.sequence(actions)
     }
     
+    //set location and return zombie to be added to game
+    static func spawnZombie(x:CGFloat, y:CGFloat) -> SKSpriteNode{
+        DataStore.zombie.position = CGPoint(x:x, y:y)
+        DataStore.zombie.zPosition = 50
+        return DataStore.zombie
+    }
+    
+    //sets camera location independednt parameters, sets constants depending on enemy being primary or secondary and returns enemy object
+    static func spawnEnemy(type: String) -> SKSpriteNode{
+        let enemy = SKSpriteNode.init(imageNamed: "enemy")
+        enemy.name = "enemy"
+        let multiplcationFactor: CGFloat = (type == "primary") ? 1.0 : (type == "secondary") ? -1.0 : 0.0
+        enemy.setScale(DataStore.moveRight ? 0.8 * multiplcationFactor : -0.8 * multiplcationFactor)
+        return enemy
+    }
+    
+    //sets camera location independent parameters, returns cat object
+    static func spawnCat() -> SKSpriteNode{
+        let cat = SKSpriteNode(imageNamed: "cat")
+        cat.name = "cat"
+        cat.setScale(0)
+        cat.zRotation = -π / 16.0
+        return cat
+    }
+    
+    //sets camera location independent parameters, returns flower object for the game
+    static func spawnFlower() -> SKSpriteNode{
+        let flower = SKSpriteNode.init(imageNamed: "sunflower")
+        flower.name = "flower"
+        flower.size = CGSize(width: 190.0, height: 190.0)
+        flower.position.y = DataStore.playableRect.maxY + flower.size.height/2
+        flower.run(SpawnAndAnimations.flowerAnimation)
+        return flower
+    }
+    //sets camera location independent parameters, returns fish object for the game depending on type passed ("small" / "big")
+    static func spawnFish(type: String) -> SKSpriteNode{
+        let fish = SKSpriteNode.init(imageNamed: type + "Fish")
+        fish.name = type + "Fish"
+        fish.setScale(0.0)
+        fish.size = CGSize(width: 190.0, height: 190.0)
+        fish.position.y = CGFloat.random(min: DataStore.playableRect.minY + fish.size.height, max: DataStore.playableRect.maxY - fish.size.height)
+        fish.run(SpawnAndAnimations.fishAnimation)
+        return fish
+    }
+    
+    
+    //check what object hit zombie and take necessary action
     static func zombieHit(object: SKSpriteNode, scene: GameScene){
+        print(object.name)
         switch object.name {
         case "cat":do {
                 object.removeAllActions()
@@ -229,12 +239,14 @@ class SpawnAndAnimations: NSObject {
         SpawnAndAnimations.updateLabels()
     }
     
+    //rotate helper function
     static func rotate(sprite: SKSpriteNode, direction: CGPoint, rotateRadiansPerSecond : CGFloat) {
         let shortest = shortestAngleBetween(angle1: sprite.zRotation, angle2: DataStore.velocity.angle)
         let amountToRotate = min(rotateRadiansPerSecond * CGFloat(DataStore.dt), abs(shortest))
         sprite.zRotation += shortest.sign() * amountToRotate
     }
     
+    //check if zombie is going out of screen
     static func boundsCheckZombie(bottomLeft: CGPoint, topRight: CGPoint){
         if DataStore.zombie.position.x <= bottomLeft.x {
             DataStore.zombie.position.x = bottomLeft.x
@@ -254,32 +266,33 @@ class SpawnAndAnimations: NSObject {
         }
     }
     
+    //function used to create a background node
     static func backgroundNode() -> SKSpriteNode {
-        // 1
         let backgroundNode = SKSpriteNode()
         backgroundNode.anchorPoint = CGPoint.zero
         backgroundNode.name = "background"
-        // 2
+        
         let background1 = SKSpriteNode(imageNamed: "background1")
         background1.anchorPoint = CGPoint.zero
         background1.position = CGPoint(x: 0, y: 0)
         backgroundNode.addChild(background1)
-        // 3
+        
         let background2 = SKSpriteNode(imageNamed: "background2")
         background2.anchorPoint = CGPoint.zero
         background2.position =
             CGPoint(x: background1.size.width, y: 0)
         backgroundNode.addChild(background2)
-        // 4
+        
         backgroundNode.size = CGSize(
             width: background1.size.width + background2.size.width,
             height: background1.size.height)
         
-        backgroundNode.zPosition = -2
+        backgroundNode.zPosition = -3
         backgroundNode.name = "background"
         return backgroundNode
     }
     
+    //function to move cats in a train
     static func moveCatTrain(cat: SKSpriteNode, targetPosition: CGPoint){
         let actionDuration = 0.3
         let offset = targetPosition - cat.position
@@ -290,6 +303,7 @@ class SpawnAndAnimations: NSObject {
         cat.run(moveAction)
     }
     
+    //set constant values of playbutton
     static func setPlayButton(){
         DataStore.playButton.setScale(0.8)
         DataStore.playButton.zPosition = 10
@@ -300,37 +314,89 @@ class SpawnAndAnimations: NSObject {
         DataStore.playButton.run(SKAction.repeatForever(buttonActionSequence))
     }
     
+    //set constant values of sound button
     static func setSoundButton(){
         DataStore.soundButton.anchorPoint = CGPoint(x: 1, y: 0)
         DataStore.soundButton.zPosition = 10
     }
     
+    //set constant values of add on option buttons
     static func setOptionButton(button: inout SKSpriteNode){
         button.zRotation = -1
         button.size = CGSize(width: 180.0, height: 180.0)
         button.position.x = DataStore.playableRect.minX + button.size.width
-        button.run(SKAction.repeatForever(SpawnAndAnimations.optionButtonAnimation()))
+        button.run(SKAction.repeatForever(SpawnAndAnimations.wiggleAndZoomInOutAnimation))
     }
     
+    //set constants of labels
     static func setLabels(){
         DataStore.livesLabel.fontColor = SKColor.black
         DataStore.livesLabel.fontSize = 100
         DataStore.livesLabel.zPosition = 150
         DataStore.livesLabel.horizontalAlignmentMode = .left
         DataStore.livesLabel.verticalAlignmentMode = .bottom
+        DataStore.livesLabel.position = CGPoint(
+            x: -DataStore.playableRect.size.width/2 + CGFloat(20),
+            y: -DataStore.playableRect.size.height/2 + CGFloat(20))
         
         DataStore.catsInTrainLabel.fontColor = SKColor.black
         DataStore.catsInTrainLabel.fontSize = 100
         DataStore.catsInTrainLabel.zPosition = 150
         DataStore.catsInTrainLabel.horizontalAlignmentMode = .right
         DataStore.catsInTrainLabel.verticalAlignmentMode = .bottom
+        DataStore.catsInTrainLabel.position = CGPoint(
+            x: DataStore.playableRect.size.width/2 - CGFloat(20),
+            y: -DataStore.playableRect.size.height/2 + CGFloat(20))
         
         SpawnAndAnimations.updateLabels()
     }
     
+    //fetch new data to be shown in labels
     static func updateLabels(){
         DataStore.livesLabel.text = "Lives: " + String(DataStore.lives)
         DataStore.catsInTrainLabel.text = "Cats: " + String(DataStore.catsInTrain)
+    }
+    
+    //check option button clicked
+    
+    static func checkOptionButtonClicked(touch: UITouch, scene: MainMenuScene){
+        if(DataStore.soundButton.contains(touch.location(in: scene))){
+            if DataStore.allowSound{
+                DataStore.allowSound = false
+                DataStore.soundButton.texture = SKTexture(imageNamed: "noSound")
+            }else{
+                DataStore.allowSound = true
+                DataStore.soundButton.texture = SKTexture(imageNamed: "sound")
+            }
+        }
+        
+        if(DataStore.secondaryEnemyButton.contains(touch.location(in: scene))){
+            DataStore.secondaryEnemyEnabled = !DataStore.secondaryEnemyEnabled
+            
+            let colourAction = SKAction.colorize(with:  UIColor.green, colorBlendFactor: DataStore.secondaryEnemyEnabled ? 1.0 : 0.0, duration: 0.0)
+            DataStore.secondaryEnemyButton.run(colourAction)
+        }
+        
+        if(DataStore.flowerButton.contains(touch.location(in: scene))){
+            DataStore.flowerEnabled = !DataStore.flowerEnabled
+            
+            let colourAction = SKAction.colorize(with:  UIColor.green, colorBlendFactor: DataStore.flowerEnabled ? 1.0 : 0.0, duration: 0.0)
+            DataStore.flowerButton.run(colourAction)
+        }
+        
+        if(DataStore.smallFishButton.contains(touch.location(in: scene))){
+            DataStore.smallFishEnabled = !DataStore.smallFishEnabled
+            
+            let colourAction = SKAction.colorize(with:  UIColor.green, colorBlendFactor: DataStore.smallFishEnabled ? 1.0 : 0.0, duration: 0.0)
+            DataStore.smallFishButton.run(colourAction)
+        }
+        
+        if(DataStore.bigFishButton.contains(touch.location(in: scene))){
+            DataStore.bigFishEnabled = !DataStore.bigFishEnabled
+            
+            let colourAction = SKAction.colorize(with:  UIColor.green, colorBlendFactor: DataStore.bigFishEnabled ? 1.0 : 0.0, duration: 0.0)
+            DataStore.bigFishButton.run(colourAction)
+        }
     }
     
 }

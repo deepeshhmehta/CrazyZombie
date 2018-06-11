@@ -10,7 +10,7 @@ import SpriteKit
 import GameplayKit
 
 class GameScene: SKScene {
-    
+    //camera Rect used for visible bounds
     var cameraRect : CGRect {
         let x = DataStore.cameraNode.position.x - size.width/2
             + (size.width - DataStore.playableRect.width)/2
@@ -23,24 +23,23 @@ class GameScene: SKScene {
             height: DataStore.playableRect.height)
     }
     
+    //function that runs when scene loads
     override func didMove(to view: SKView) {
+        //reset game parameters to override previous game values
         DataStore.lives = 5
         DataStore.catsInTrain = 0
         DataStore.gameOver = false
         DataStore.zombieIsBlinking = false
         DataStore.lastUpdateTime = 0
         DataStore.dt = 0
+        DataStore.destination = DataStore.zombie.position
         
+        //set position add score labels
         SpawnAndAnimations.setLabels()
-        DataStore.livesLabel.position = CGPoint(
-            x: -DataStore.playableRect.size.width/2 + CGFloat(20),
-            y: -DataStore.playableRect.size.height/2 + CGFloat(20))
         DataStore.cameraNode.addChild(DataStore.livesLabel)
-        DataStore.catsInTrainLabel.position = CGPoint(
-            x: DataStore.playableRect.size.width/2 - CGFloat(20),
-            y: -DataStore.playableRect.size.height/2 + CGFloat(20))
         DataStore.cameraNode.addChild(DataStore.catsInTrainLabel)
         
+        //test print gamestats
 //        print("GameStats")
 //        print("------")
 //        print("lives: \(Values.lives)")
@@ -50,27 +49,23 @@ class GameScene: SKScene {
 //        print("lastUpdateTime: \(Values.lastUpdateTime)")
 //        print("dt: \(Values.dt)")
         
-        let maxAspectRatio : CGFloat = 16.0/9.0
-        let playableHeight = size.width / maxAspectRatio
-        let playableMargin = ( size.height - playableHeight )/2.0
-        DataStore.playableRect = CGRect(x: 0, y: playableMargin, width: size.width, height: playableHeight)
         
+        //add 2 background nodes to move around
         for i in 0...1 {
             let background = SpawnAndAnimations.backgroundNode()
-            background.anchorPoint = CGPoint.zero
-            background.position =
-                CGPoint(x: CGFloat(i)*background.size.width, y: 0)
-            background.name = "background"
-            background.zPosition = -3
+            background.position = CGPoint(x: CGFloat(i)*background.size.width, y: 0)
             addChild(background)
         }
         
+        //set camera
         DataStore.cameraNode.position = CGPoint(x: size.width/2, y: size.height/2)
         camera = DataStore.cameraNode
         addChild(DataStore.cameraNode)
         
+        //add main player
         addChild(SpawnAndAnimations.spawnZombie(x: size.width/4, y: 400))
 
+        //spawn action for primary enemy
         let primaryAction = SKAction.repeatForever(SKAction.sequence([
                     SKAction.run() { [weak self] in
                         self?.spawnEnemy(type: "primary")
@@ -81,15 +76,13 @@ class GameScene: SKScene {
             )
         run(primaryAction)
         
+        //spawn action for cats
         run(SKAction.repeatForever(
             SKAction.sequence([SKAction.run() { [weak self] in
                 self?.spawnCat()
                 },SKAction.wait(forDuration: TimeInterval(CGFloat.random(min: 1.0, max: 5.0)))])))
         
-        if DataStore.allowSound{
-            playBackgroundMusic(filename: "backgroundMusic.mp3")
-        }
-        
+        //check and spawn action for secondary enemy
         if(DataStore.secondaryEnemyEnabled){
             let secondaryAction = SKAction.repeatForever(
                                     SKAction.sequence([
@@ -102,6 +95,7 @@ class GameScene: SKScene {
             run(secondaryAction)
         }
         
+        //check and spawn action for flower
         if(DataStore.flowerEnabled){
             let flowerSpawnAction = SKAction.repeatForever(
                 SKAction.sequence([
@@ -114,6 +108,7 @@ class GameScene: SKScene {
             run(flowerSpawnAction)
         }
         
+        //check and spawn action for small fish
         if(DataStore.smallFishEnabled){
             let smallFishSpawnAction = SKAction.repeatForever(
                 SKAction.sequence([
@@ -126,6 +121,7 @@ class GameScene: SKScene {
             run(smallFishSpawnAction)
         }
         
+        //check and spawn action for bigfish
         if(DataStore.bigFishEnabled){
             let bigFishSpawnAction = SKAction.repeatForever(
                 SKAction.sequence([
@@ -137,9 +133,15 @@ class GameScene: SKScene {
             )
             run(bigFishSpawnAction)
         }
+        
+        //if music is allowed play background music
+        if DataStore.allowSound{
+            playBackgroundMusic(filename: "backgroundMusic.mp3")
+        }
     }
     
     override func update(_ currentTime: TimeInterval) {
+        //find difference between twoframe updates
         if DataStore.lastUpdateTime > 0 {
             DataStore.dt = currentTime - DataStore.lastUpdateTime
         } else {
@@ -147,12 +149,17 @@ class GameScene: SKScene {
         }
         DataStore.lastUpdateTime = currentTime
         
-        if DataStore.destination.x > DataStore.zombie.position.x{
+        //if zombie is moving to the right
+        if DataStore.destination.x >= DataStore.zombie.position.x{
             DataStore.moveRight = true
+            //if secondary enemy is enabled center zombie or else off center
             let pos: CGFloat = DataStore.zombie.position.x + (DataStore.secondaryEnemyEnabled ? 0 : size.width/4)
             let transitionAnimate = SKAction.moveTo(x: pos, duration: 0.5)
+            
+            //animate camera to follow zombie
             DataStore.cameraNode.run(transitionAnimate)
             
+            //change directions of background node generated
             enumerateChildNodes(withName: "background") { node, _ in
                 let background = node as! SKSpriteNode
                 if background.position.x + background.size.width < self.cameraRect.origin.x {
@@ -162,13 +169,18 @@ class GameScene: SKScene {
                 }
             }
         }
+        
+        //if zombie is moving to the left
         if DataStore.destination.x < DataStore.zombie.position.x {
             DataStore.moveRight = false
+            //if secondary enemy is enabled center zombie or else off center
             let pos: CGFloat = DataStore.zombie.position.x - (DataStore.secondaryEnemyEnabled ? 0 : size.width/4)
-//            pos = pos > size.width/2 ? pos : size.width/2
             let transitionAnimate = SKAction.moveTo(x: pos, duration: 0.5)
+            
+            //animate camera to follow zombie
             DataStore.cameraNode.run(transitionAnimate)
             
+            //change directions of background node generated
             enumerateChildNodes(withName: "background") { node, _ in
                 let background = node as! SKSpriteNode
                 if background.position.x > self.cameraRect.maxX{
@@ -178,17 +190,19 @@ class GameScene: SKScene {
                 }
             }
         }
-        
+        //move to tapped location only. DO NOT KEEP GOING IN A DIRECTION unless hit a boundary
         if(DataStore.destination - DataStore.zombie.position).length() > (CGFloat(DataStore.dt) * DataStore.zombieMovePointsPerSec){
             move(sprite: DataStore.zombie,velocity: DataStore.velocity)
             SpawnAndAnimations.rotate(sprite: DataStore.zombie, direction: DataStore.velocity, rotateRadiansPerSecond: 3)
         }else{
+            //stop walk animation
             DataStore.zombie.removeAction(forKey: "ZombieWalk")
         }
         
+        //check for hit boundary
         boundsCheckZombie()
-        moveTrain()
 
+        //check for loose condition
         if DataStore.lives <= 0 && DataStore.gameOver == false{
             DataStore.gameOver = true
             DataStore.won = false
@@ -196,9 +210,12 @@ class GameScene: SKScene {
             gameOverScene.scaleMode = scaleMode
             let reveal = SKTransition.doorsOpenHorizontal(withDuration: 1.0)
             backgroundMusicPlayer.stop()
+            self.removeFromParent()
             view?.presentScene(gameOverScene, transition: reveal)
+            
         }
         
+        //check for win condition
         if DataStore.catsInTrain >= 15 && DataStore.gameOver == false{
             DataStore.gameOver = true
             DataStore.won = true
@@ -206,50 +223,55 @@ class GameScene: SKScene {
             gameWonScene.scaleMode = scaleMode
             let reveal = SKTransition.doorsOpenHorizontal(withDuration: 1.0)
             backgroundMusicPlayer.stop()
+            self.removeFromParent()
             view?.presentScene(gameWonScene, transition: reveal)
-        }
-        
-        enumerateChildNodes(withName: "background") { node, _ in
-            let background = node as! SKSpriteNode
-            if background.position.x + background.size.width <
-                self.cameraRect.origin.x {
-                background.position = CGPoint(
-                    x: background.position.x + background.size.width*2,
-                    y: background.position.y)
-            }
         }
     }
     
+    //check for collissions after evaluating actions
     override func didEvaluateActions() {
         checkCollisions()
     }
     
+    
+    //move a particular object to a particular location
     func move(sprite: SKSpriteNode, velocity: CGPoint) {
-        // 1
         let amountToMove = velocity * CGFloat(DataStore.dt)
-        // 2
         sprite.position += amountToMove
     }
     
+    //function used to move zombie to a particular point
     func moveZombieToward(location: CGPoint) {
+        //start walk animation
         DataStore.zombie.run(SKAction.repeatForever(DataStore.zombieAnimation), withKey: "ZombieWalk")
+        
+        //set move parameters
         let offset = location - DataStore.zombie.position
         let direction = offset.normalized()
         DataStore.velocity = direction * DataStore.zombieMovePointsPerSec
+        
+        //make train move towards zombie
+        moveTrain()
     }
-    
+    //check when screen is touched
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        //get the first instance of the rouch
         guard let touch = touches.first else {
             return
         }
+            //set variables and move zombie towards touch
             let touchLocation = touch.location(in: self)
             DataStore.destination = touchLocation
             moveZombieToward(location: touchLocation)
+        
+            //initialize a touch marker to show
             let touchPointer = SKSpriteNode.init(imageNamed: "touchMarker")
             touchPointer.zPosition = 5.0
             touchPointer.position = touchLocation
             addChild(touchPointer)
             touchPointer.setScale(1.0)
+        
+            //animate the marker
             let touchDisappear = SKAction.scale(to: 0.0, duration: 0.5)
             let touchRemove = SKAction.run {
                 touchPointer.removeFromParent()
@@ -260,6 +282,7 @@ class GameScene: SKScene {
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        //if a user presses and holds then make zombie continuouslyy move towards his touch
         for touch in touches{
             let touchLocation = touch.location(in: self)
             DataStore.destination = touchLocation
@@ -271,12 +294,13 @@ class GameScene: SKScene {
     }
     
     func boundsCheckZombie() {
+        //set constants and call function to check bounds and take necessary actions
         let bottomLeft = CGPoint(x: DataStore.zombie.size.width/2 + cameraRect.minX, y: cameraRect.minY + DataStore.zombie.size.height / 2)
         let topRight = CGPoint(x: cameraRect.maxX - DataStore.zombie.size.width / 2, y: cameraRect.maxY - DataStore.zombie.size.height / 2)
-        
         SpawnAndAnimations.boundsCheckZombie(bottomLeft: bottomLeft, topRight: topRight)
     }
     
+    //get enemy with basic parameters set from spawn and animations, set other parameters and add. also check for primary or secondary
     func spawnEnemy(type: String){
         let enemy = SpawnAndAnimations.spawnEnemy(type: type)
         
@@ -312,7 +336,7 @@ class GameScene: SKScene {
                               max: cameraRect.maxY - cat.size.height/2))
         addChild(cat)
         
-        cat.run(SpawnAndAnimations.catAnimation())
+        cat.run(SpawnAndAnimations.catAnimation)
     }
     
     func spawnFlower(){
@@ -332,6 +356,7 @@ class GameScene: SKScene {
         addChild(fish)
     }
     
+    //check collision with zombie
     func checkCollisions() {
         enumerateChildNodes(withName: "cat") { node, _ in
             let cat = node as! SKSpriteNode
@@ -370,6 +395,7 @@ class GameScene: SKScene {
         
     }
     
+    //move train of cat
     func moveTrain() {
         var targetPosition = DataStore.zombie.position
         enumerateChildNodes(withName: "train") { node, stop in
@@ -381,6 +407,7 @@ class GameScene: SKScene {
         }
     }
     
+    //reduce the number of cats in train
     func looseCats(){
         var looseCount = 0
         enumerateChildNodes(withName: "train"){ node, stop in
