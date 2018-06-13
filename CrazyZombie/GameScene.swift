@@ -226,6 +226,9 @@ class GameScene: SKScene {
             self.removeFromParent()
             view?.presentScene(gameWonScene, transition: reveal)
         }
+        
+        //make train move towards zombie
+        moveTrain()
     }
     
     //check for collissions after evaluating actions
@@ -250,8 +253,6 @@ class GameScene: SKScene {
         let direction = offset.normalized()
         DataStore.velocity = direction * DataStore.zombieMovePointsPerSec
         
-        //make train move towards zombie
-        moveTrain()
     }
     //check when screen is touched
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
