@@ -123,7 +123,6 @@ class SpawnAndAnimations: NSObject {
     
     //check what object hit zombie and take necessary action
     static func zombieHit(object: SKSpriteNode, scene: GameScene){
-        print(object.name)
         switch object.name {
         case "cat":do {
                 object.removeAllActions()

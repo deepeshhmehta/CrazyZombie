@@ -209,7 +209,9 @@ class GameScene: SKScene {
             let gameOverScene = GameOverScene(size: size)
             gameOverScene.scaleMode = scaleMode
             let reveal = SKTransition.doorsOpenHorizontal(withDuration: 1.0)
-            backgroundMusicPlayer.stop()
+            if(DataStore.allowSound){
+                backgroundMusicPlayer.stop()
+            }
             self.removeFromParent()
             view?.presentScene(gameOverScene, transition: reveal)
             
@@ -222,7 +224,9 @@ class GameScene: SKScene {
             let gameWonScene = GameOverScene(size: size)
             gameWonScene.scaleMode = scaleMode
             let reveal = SKTransition.doorsOpenHorizontal(withDuration: 1.0)
-            backgroundMusicPlayer.stop()
+            if(DataStore.allowSound){
+                backgroundMusicPlayer.stop()
+            }
             self.removeFromParent()
             view?.presentScene(gameWonScene, transition: reveal)
         }
